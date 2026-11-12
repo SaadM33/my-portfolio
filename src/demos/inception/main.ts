@@ -104,7 +104,7 @@ function buildSvg(): string {
   const net = compose.networks.inception;
   out.push(`<g class="inc-net" tabindex="0" role="button" aria-label="Network inception: show docker-compose.yml and Makefile" data-kind="network">
     <rect x="${NET.x}" y="${NET.y}" width="${NET.w}" height="${NET.h}" class="ln dash inc-netbox"/>
-    <rect x="${NET.x}" y="${NET.y - 14}" width="250" height="14" class="inc-nettab"/>
+    <rect x="${NET.x}" y="${NET.y - 14}" width="330" height="14" class="inc-nettab"/>
     <text x="${NET.x + 6}" y="${NET.y - 4}" class="sm inc-nettxt">NETWORK inception · driver: ${net.driver} · all ${NAMES.length} services</text></g>`);
   // edges (depends_on)
   for (const [k, pts] of Object.entries(EDGES)) {
@@ -121,7 +121,7 @@ function buildSvg(): string {
     const ports: string[] = services[n].ports || []; if (!ports.length) continue;
     const y = EDGES["in:" + n][0][1];
     out.push(`<rect x="${NET.x - 4}" y="${y - 4}" width="8" height="8" class="inc-tab"/>`);
-    ports.forEach((p, i) => out.push(`<text x="${n === "nginx" ? 112 : 30}" y="${y - 6 - i * 11}" class="sm inc-pl">${esc(p)}</text>`));
+    ports.forEach((p, i) => out.push(`<text x="${n === "nginx" ? 112 : 18}" y="${y - 6 - i * 11}" class="sm inc-pl">${esc(p)}</text>`));
     if (n !== "nginx") out.push(`<circle cx="24" cy="${y}" r="2.5" class="lead-dot"/>`);
   }
   // wp_data bus + db_data line (volume mounts)
@@ -158,12 +158,12 @@ function buildSvg(): string {
     out.push(`<g class="inc-node" data-name="${n}" data-kind="service" tabindex="0" role="button" aria-label="${n}: ${L.role}. Open its files" style="--i:${i}">
       <rect x="${x}" y="${y}" width="${W}" height="${H}" class="part inc-box"/>
       <rect x="${x}" y="${y}" width="${W}" height="16" class="inc-hd"/>
-      <text x="${x + 6}" y="${y + 11.5}" class="sm inc-hdt">${String(i + 1).padStart(2, "0")} · ${services[n].image}</text>
+      <text x="${x + 6}" y="${y + 12}" class="sm inc-hdt">${String(i + 1).padStart(2, "0")} · ${services[n].image}${services[n].privileged === "true" ? " · privileged" : ""}</text>
       <circle cx="${x + W - 8}" cy="${y + 8}" r="3.2" class="inc-led"/>
       <text x="${x + 8}" y="${y + 35}" class="cond inc-nm">${n}</text>
       <text x="${x + W - 8}" y="${y + 35}" text-anchor="end" class="sm">:${port}</text>
       <text x="${x + 8}" y="${y + 52}" class="sm">${esc(L.role)}</text>
-      ${services[n].privileged === "true" ? `<text x="${x + W - 8}" y="${y + 52}" text-anchor="end" class="note">privileged</text>` : ""}
+      
     </g>`);
   });
   // legend

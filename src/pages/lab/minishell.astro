@@ -1,0 +1,175 @@
+---
+import LabLayout from "../../layouts/LabLayout.astro";
+
+const examples: { label: string; lines: string[] }[] = [
+  { label: "quotes + $VAR + $?", lines: [`echo "I am $USER" 'literal $USER' $?`] },
+  { label: "pipeline", lines: [`ls -l | grep txt | wc -l`] },
+  { label: "redirect in/out", lines: [`cat < fruits.txt | sort -u | head -n 3 > top3.txt`, `cat top3.txt`] },
+  { label: "heredoc", lines: [`cat << EOF | grep -i a`, `apple`, `Cherry`, `banana`, `$USER`, `EOF`] },
+  { label: "export / unset", lines: [`export GREETING=hello`, `echo "$GREETING $?"`, `unset GREETING`, `echo "[$GREETING]"`] },
+  { label: "errors", lines: [`echo hi >`, `echo "oops`, `nosuchcmd`, `echo $?`, `cat missing.txt | wc -l`, `echo $?`] },
+];
+---
+
+<LabLayout
+  title="minishell"
+  sheet="L4"
+  subtitle="A bash-like shell in C from the 1337 curriculum, running in your browser. Type a command, then see how the line was lexed, parsed, redirected, expanded and executed."
+  repo="SaadM33/minishell"
+  note="Real: the project's own C (lexer, syntax checker, parser, heredoc and redirection code, $VAR/$? expander, builtins, PATH lookup, exec_child, prompt and error strings) compiled to WebAssembly by build.sh, libft included. Simulated in JS: fork, pipe, execve and waitpid (processes run one after another), an in-memory file system, and ls, cat, wc, grep, head, sort, true, false, clear as stand-ins for system tools. Changed: the heredoc reader takes lines in-process instead of forking and writing to /tmp. Like the real shell, there is no &&, ;, * or $(...)."
+>
+  <div class="ms-examples" role="group" aria-label="Example commands">
+    <span class="ms-lbl">Try</span>
+    {examples.map((e) => (
+      <button type="button" class="ms-ex" data-example={JSON.stringify(e.lines)} title={e.lines.join("\n")}>
+        <code>{e.lines[0].length > 34 ? e.lines[0].slice(0, 33) + "…" : e.lines[0]}</code>
+        <small>{e.label}</small>
+      </button>
+    ))}
+  </div>
+
+  <div class="ms-grid">
+    <div class="ms-left">
+      <div class="ms-bar"><b>Terminal</b><span>Megashell · <em id="ms-status">loading</em></span></div>
+      <div class="ms-term" id="ms-term" role="group" aria-label="Terminal">
+        <pre id="ms-out" role="log" aria-live="polite"></pre>
+        <label class="ms-line">
+          <span id="ms-prompt" class="ms-prompt" aria-hidden="true"></span>
+          <input
+            id="ms-in"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            enterkeyhint="send"
+            aria-label="minishell command line"
+          />
+        </label>
+      </div>
+      <div class="ms-keys">
+        <button type="button" data-key="up" aria-label="Previous history entry">↑</button>
+        <button type="button" data-key="down" aria-label="Next history entry">↓</button>
+        <button type="button" data-key="c" aria-label="Ctrl-C">^C</button>
+        <button type="button" data-key="d" aria-label="Ctrl-D">^D</button>
+        <span class="ms-hint">files here: fruits.txt notes.txt projects/</span>
+      </div>
+      <p class="ms-legend">
+        <b>builtins (real C)</b> echo -n · cd · pwd · export · unset · env · exit<br />
+        <b>external (simulated)</b> ls cat wc grep head sort true false clear
+      </p>
+    </div>
+
+    <div class="ms-right">
+      <div class="ms-bar"><b>Inspection</b><span>last command line</span></div>
+      <div class="ms-panel" id="ms-panel" aria-label="How the last command was processed"></div>
+    </div>
+  </div>
+</LabLayout>
+
+<script>
+  import { start } from "../../demos/minishell/ui";
+  start();
+</script>
+
+<style is:global>
+  .ms-examples{display:flex;flex-wrap:wrap;gap:0;margin-bottom:22px;border:1px solid var(--line);background:var(--paper)}
+  .ms-lbl{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);padding:0 14px;display:flex;align-items:center}
+  .ms-ex{font:inherit;background:var(--paper);border:0;border-left:1px solid var(--line);padding:8px 12px;text-align:left;cursor:pointer;display:grid;gap:2px;color:var(--ink);flex:1 1 150px;min-width:0}
+  .ms-ex code{font:500 12px var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms-ex small{font:400 10px var(--mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+  .ms-ex:hover{background:var(--ink);color:var(--paper)}
+  .ms-ex:hover small{color:var(--red)}
+
+  .ms-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+  .ms-left{position:sticky;top:54px;min-width:0}
+  .ms-right{min-width:0}
+  .ms-bar{display:flex;justify-content:space-between;gap:12px;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-bottom:0;padding:7px 12px;background:var(--paper)}
+  .ms-bar b{font-weight:600}
+  .ms-bar span{color:var(--ink-3)}
+  .ms-bar em{font-style:normal;color:var(--red)}
+
+  .ms-term{background:var(--ink);color:#e9e6da;font:400 13.5px/1.5 var(--mono);border:1px solid var(--line);height:min(62vh,540px);min-height:320px;overflow-y:auto;overflow-x:hidden;padding:12px 14px;cursor:text}
+  .ms-term pre{font:inherit;white-space:pre-wrap;word-break:break-all;margin:0}
+  .ms-term .err{color:#ff9d92}
+  .ms-term .dim{color:#8fa0b3}
+  .ms-line{display:flex;align-items:baseline;gap:0}
+  .ms-prompt{white-space:pre;color:#fff;font-weight:600}
+  .ms-line input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:inherit;font:inherit;caret-color:var(--red);padding:0}
+  .ms-line input::placeholder{color:#8fa0b3;font-style:italic}
+  .ms-term:focus-within{outline:2px solid var(--red);outline-offset:2px}
+  .ms-keys{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-top:0}
+  .ms-keys button{font:600 12px var(--mono);background:var(--paper);color:var(--ink);border:0;border-right:1px solid var(--line);padding:8px 14px;cursor:pointer}
+  .ms-keys button:hover{background:var(--red);color:var(--paper)}
+  .ms-hint{font:italic 400 11px var(--mono);color:var(--ink-3);padding:0 12px;margin-left:auto;text-align:right}
+  .ms-legend{font:400 11.5px/1.7 var(--mono);color:var(--ink-2);margin-top:12px}
+  .ms-legend b{color:var(--ink);font-weight:600;margin-right:8px}
+
+  /* inspection panel */
+  .ms-panel{border:1px solid var(--line);background:rgba(255,255,255,.35);padding:14px}
+  .ms-panel .empty{font:italic 400 12.5px/1.6 var(--mono);color:var(--ink-2)}
+  .ms-panel code{font:500 12px var(--mono)}
+  .cmdline{display:flex;gap:10px;align-items:baseline;border-bottom:1px dashed rgba(28,42,58,.35);padding-bottom:10px;margin-bottom:14px;min-width:0}
+  .cmdline small,.ms-panel .row small{font:400 10px var(--mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.07em}
+  .cmdline code{color:var(--red);overflow-wrap:anywhere}
+  .st{position:relative;border:1px solid var(--line);background:var(--paper)}
+  .st + .st{margin-top:22px}
+  .st + .st::before{content:"";position:absolute;left:24px;top:-22px;height:22px;border-left:1px solid var(--ink-2)}
+  .st + .st::after{content:"";position:absolute;left:20px;top:-7px;border:4px solid transparent;border-top:7px solid var(--ink-2);border-bottom:0}
+  .st > header{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--paper);padding:5px 10px;font:500 11px var(--mono);letter-spacing:.05em;text-transform:uppercase;flex-wrap:wrap}
+  .st > header .no{border:1px solid var(--paper);border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:10px}
+  .st > header code{margin-left:auto;font:400 10.5px var(--mono);text-transform:none;color:#b9c4d0}
+  .st .body{padding:11px 12px}
+  .st.off{opacity:.5}
+  .st .legend{font:400 11px/1.6 var(--mono);color:var(--ink-3);margin-top:9px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px 2px;align-items:center}
+  .chip{display:inline-flex;flex-direction:column;align-items:center;border:1px solid var(--ink-2);background:#fff8;padding:2px 7px 1px;min-width:26px}
+  .chip code{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .chip i{font:600 8.5px var(--mono);font-style:normal;color:var(--ink-3);letter-spacing:.06em}
+  .chip.t-OP,.chip.t-PP{border-color:var(--red);color:var(--red)}
+  .chip.t-OP i,.chip.t-PP i{color:var(--red)}
+  .chip.t-SQ{border-style:dashed}
+  .chip.t-DQ{border-style:double;border-width:3px;padding:0 5px}
+  .legend .chip{display:inline-flex;flex-direction:row;padding:0 4px;min-width:0;vertical-align:baseline}
+  .glue{color:var(--red);font:600 13px var(--mono);padding:0 1px}
+  .warn,.bad-msg{font:500 12px/1.5 var(--mono);color:var(--red);margin-top:8px}
+  .bad-msg{margin:0}
+  .ok-msg{font:400 12px var(--mono);color:var(--ink-2)}
+  .cmds{display:flex;flex-direction:column;gap:0}
+  .cmd{border:1px solid rgba(28,42,58,.35);padding:7px 9px;background:#fff6;min-width:0}
+  .cmd .ch{font:600 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
+  .cmd .skip{color:var(--red);margin-left:6px}
+  .row{display:grid;grid-template-columns:54px minmax(0,1fr);gap:8px;padding:2px 0;align-items:baseline}
+  .row > span{overflow-wrap:anywhere;font:400 12px/1.6 var(--mono)}
+  .row em{color:var(--ink-3);font-size:11.5px}
+  code.w{background:rgba(28,42,58,.07);padding:0 4px}
+  code.r{color:var(--red);font-weight:600}
+  code.a{border:1px solid var(--ink-2);padding:0 4px;display:inline-block;margin:1px 0;background:#fff8}
+  code.a sup{color:var(--red);font-size:8px;margin-right:3px}
+  .fd{color:var(--ink)}
+  .pipe{align-self:center;font:600 13px var(--mono);color:var(--red);line-height:1.1;padding:2px 0}
+  .proc{border:1px solid var(--line);padding:8px 10px;background:#fff7;min-width:0}
+  .proc.sk{opacity:.6;border-style:dashed}
+  .proc .ph{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;font:600 12px var(--mono)}
+  .proc .ph .k{color:var(--ink-3);font-weight:400}
+  .proc .ex{margin-left:auto;border:1px solid var(--ink-2);padding:0 6px;font:600 11px var(--mono)}
+  .proc .ex.bad{color:var(--red);border-color:var(--red)}
+  .ev{font:400 11px/1.5 var(--mono);color:var(--ink-2);background:rgba(28,42,58,.06);padding:5px 8px;margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .link{font:italic 400 11px var(--mono);color:var(--red);text-align:center;padding:3px 0;border-left:1px solid var(--red);margin-left:24px;text-align:left;padding-left:10px}
+  .final{font:400 12px var(--mono);margin-top:10px;color:var(--ink-2)}
+  .final code.bad{color:var(--red)}
+
+  @media (max-width:1000px){
+    .ms-grid{grid-template-columns:minmax(0,1fr)}
+    .ms-left{position:static}
+  }
+  @media (max-width:600px){
+    .ms-term{font-size:12.5px;height:56vh;padding:10px}
+    .ms-hint{display:none}
+    .ms-keys button{flex:1;padding:10px 6px}
+    .ms-lbl{width:100%;padding:6px 14px}
+    .ms-ex{border-left:0;border-top:1px solid var(--line);flex-basis:100%}
+    .ms-panel{padding:10px}
+    .st > header code{margin-left:0;flex-basis:100%}
+  }
+</style>

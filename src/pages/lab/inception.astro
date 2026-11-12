@@ -7,7 +7,7 @@ import LabLayout from "../../layouts/LabLayout.astro";
   sheet="L2"
   subtitle="Eight containers built from plain debian:bookworm with docker-compose: NGINX (TLS 1.2/1.3) → WordPress on php-fpm → MariaDB, plus Redis, Adminer, a static site, vsftpd and cAdvisor. Click any part of the drawing to read its real Dockerfile, config and entrypoint."
   repo="SaadM33/inception"
-  note="Interactive visualization of the real config, not running containers. The drawing, ports, volumes, depends_on edges, file contents and every quoted config line are read from the repo's docker-compose.yml, Makefile, Dockerfiles and scripts. `make` and the request trace are replays: the order comes from depends_on and the entrypoint scripts, but build/compose output and container log lines are reconstructed (no timings, versions abbreviated). The repo's .env is git-ignored, so secrets only ever appear as ${VAR} placeholders."
+  note="Interactive visualization of the real config, not running containers. The drawing, ports, volumes, depends_on edges, file contents and every quoted config line are read from the repo's docker-compose.yml, Makefile, Dockerfiles and scripts. make and the request trace are replays: the order comes from depends_on and the entrypoint scripts, but build/compose output and container log lines are reconstructed (no timings, versions abbreviated). The repo's .env is git-ignored, so secrets only ever appear as ${VAR} placeholders."
 >
   <div id="inc" class="inc">
     <div class="inc-grid">
@@ -88,16 +88,17 @@ import LabLayout from "../../layouts/LabLayout.astro";
 <style is:global>
   .inc { --pane-h: 640px; }
   .inc button { font: inherit; color: inherit; cursor: pointer; }
-  .inc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 0; border: 1px solid var(--line); }
+  .inc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 400px); gap: 0; border: 1px solid var(--line); }
   .inc-left { min-width: 0; border-right: 1px solid var(--line); }
   .inc-figcap { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); flex-wrap: wrap; }
   .inc-hint { color: var(--red); text-transform: none; letter-spacing: 0; font-style: italic; }
   .inc-scroll { overflow-x: auto; padding: 8px 6px 0; }
-  #inc-svg { display: block; width: 100%; min-width: 720px; height: auto; }
-  #inc-svg text.inc-tiny { font-size: 6.8px; }
+  #inc-svg { display: block; width: 100%; min-width: 700px; height: auto; }
+  #inc-svg text.sm { font-size: 9.5px; }
+  #inc-svg text.inc-tiny { font-size: 8.5px; }
   #inc-svg .inc-node, #inc-svg .inc-vol, #inc-svg .inc-net { cursor: pointer; outline: none; }
   #inc-svg .inc-hd { fill: var(--paper-2); stroke: var(--ink); stroke-width: .8; }
-  #inc-svg .inc-hdt { font-size: 7.2px; letter-spacing: .04em; }
+  #inc-svg .inc-hdt { font-size: 9px; letter-spacing: .02em; }
   #inc-svg .inc-nm { font-size: 17px; }
   #inc-svg .inc-led { fill: var(--paper); stroke: var(--ink-3); stroke-width: .9; transition: fill .3s, stroke .3s; }
   #inc-svg .inc-node[data-st="off"] .inc-box { stroke-dasharray: 4 3; stroke: var(--ink-3); }
@@ -116,12 +117,12 @@ import LabLayout from "../../layouts/LabLayout.astro";
   #inc-svg .inc-node.hot .inc-box { fill: #fbf3ee; stroke: var(--red); stroke-width: 2; stroke-dasharray: none; }
   #inc-svg .inc-net:hover .inc-netbox, #inc-svg .inc-net:focus-visible .inc-netbox { stroke: var(--red); }
   #inc-svg .inc-nettab { fill: var(--ink); }
-  #inc-svg text.inc-nettxt { fill: var(--paper); font-size: 7.6px; letter-spacing: .04em; }
+  #inc-svg text.inc-nettxt { fill: var(--paper); font-size: 9.5px; letter-spacing: .02em; }
   #inc-svg .inc-net:hover .inc-nettab, #inc-svg .inc-net:focus-visible .inc-nettab { fill: var(--red); }
-  #inc-svg .inc-netbox { stroke-width: 1.1; }
+  #inc-svg .inc-netbox { stroke-width: 1.1; fill: none; pointer-events: stroke; }
   #inc-svg .inc-tab { fill: var(--red); }
   #inc-svg text.inc-pl { fill: var(--red); font-weight: 500; }
-  #inc-svg text.inc-dep { font-size: 6.6px; fill: var(--ink-3); }
+  #inc-svg text.inc-dep { font-size: 8px; fill: var(--ink-3); }
   #inc-svg .inc-edge { transition: stroke .3s, stroke-width .3s; }
   #inc-svg .inc-edge.lit { stroke: var(--red); stroke-width: 1.8; }
   #inc-svg .inc-dotc { fill: var(--red); stroke: var(--paper); stroke-width: 2; }
@@ -161,7 +162,7 @@ import LabLayout from "../../layouts/LabLayout.astro";
   .inc-ptitle { font: 600 24px/1.1 var(--cond); text-transform: uppercase; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
   .inc-ptitle .red { font: 600 12px var(--mono); }
   .inc-ptitle small { font: 400 11px var(--mono); color: var(--ink-3); text-transform: none; }
-  .inc-facts { margin: 12px 0; border: 1px solid var(--line); font: 400 11.5px/1.45 var(--mono); max-height: 230px; overflow-y: auto; flex: none; }
+  .inc-facts { margin: 12px 0; border: 1px solid var(--line); font: 400 11.5px/1.45 var(--mono); max-height: 290px; overflow-y: auto; flex: none; }
   .inc-facts > div { display: grid; grid-template-columns: 92px 1fr; border-bottom: 1px solid rgba(28,42,58,.2); }
   .inc-facts > div:last-child { border-bottom: 0; }
   .inc-facts dt { color: var(--ink-3); text-transform: uppercase; font-size: 9.5px; letter-spacing: .06em; padding: 6px 8px; border-right: 1px solid rgba(28,42,58,.2); }
