@@ -1,0 +1,59 @@
+          <svg viewBox="0 0 380 210" id="cub" aria-label="Top-down grid map with a player casting a fan of rays to the walls, and the resulting projected wall columns">
+            <g id="cub-map"></g>
+            <g id="cub-rays"></g>
+            <g id="cub-cols"></g>
+            <text x="6" y="14" class="sm">MAP · 10×7 · DDA</text>
+            <text x="262" y="20" class="sm">PROJECTION · 1 COL / RAY</text>
+            <rect class="ln thin" x="262" y="28" width="112" height="120"/>
+            <line class="ln center" x1="262" y1="88" x2="374" y2="88"/>
+            <g class="ann" id="cub-ann"></g>
+          </svg>
+
+<script>
+
+  const NS="http://www.w3.org/2000/svg";
+  const map=["1111111111","1000000001","1011000101","1000000001","1000010001","1100000011","1111111111"];
+  const C=24, ox=6, oy=22;
+  const g=document.getElementById("cub-map"), rg=document.getElementById("cub-rays"), cg=document.getElementById("cub-cols"), ag=document.getElementById("cub-ann");
+  const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||g).appendChild(e);return e};
+  map.forEach((row,y)=>[...row].forEach((c,x)=>{
+    el("rect",{x:ox+x*C,y:oy+y*C,width:C,height:C,class:c==="1"?"wall":"ln thin",style:c==="1"?"":"stroke-opacity:.25"});
+  }));
+  const px=1.7, py=3.5, dir=-0.12, fov=66*Math.PI/180, N=15;
+  const P=[ox+px*C, oy+py*C];
+  const dists=[];
+  for(let i=0;i<N;i++){
+    const a=dir-fov/2+fov*i/(N-1), dx=Math.cos(a), dy=Math.sin(a);
+    // DDA
+    let mx=Math.floor(px), my=Math.floor(py);
+    const ddx=Math.abs(1/dx), ddy=Math.abs(1/dy);
+    let sx,sy,sdx,sdy;
+    if(dx<0){sx=-1;sdx=(px-mx)*ddx}else{sx=1;sdx=(mx+1-px)*ddx}
+    if(dy<0){sy=-1;sdy=(py-my)*ddy}else{sy=1;sdy=(my+1-py)*ddy}
+    let side=0, d=0;
+    for(let k=0;k<64;k++){
+      if(sdx<sdy){d=sdx;sdx+=ddx;mx+=sx;side=0}else{d=sdy;sdy+=ddy;my+=sy;side=1}
+      if(map[my]&&map[my][mx]==="1")break;
+    }
+    const hx=ox+(px+dx*d)*C, hy=oy+(py+dy*d)*C;
+    el("line",{x1:P[0],y1:P[1],x2:hx,y2:hy,class:"ray wire",pathLength:1,style:"--i:"+(i*.25)},rg);
+    el("line",{x1:P[0],y1:P[1],x2:hx,y2:hy,class:"signal",pathLength:1,style:"--i:"+(i*.15)},rg);
+    el("circle",{cx:hx,cy:hy,r:1.4,fill:"#c2362b"},rg);
+    dists.push({d:d*Math.cos(a-dir),side});
+  }
+  el("circle",{cx:P[0],cy:P[1],r:4,class:"part",style:"--i:0"},rg);
+  el("line",{x1:P[0],y1:P[1],x2:P[0]+Math.cos(dir)*20,y2:P[1]+Math.sin(dir)*20,class:"ln","marker-end":"url(#ah)"},rg);
+  // projected columns
+  const w=112/N;
+  dists.forEach((o,i)=>{
+    const h=Math.min(116,90/o.d);
+    el("rect",{x:262+i*w+.6,y:88-h/2,width:w-1.2,height:h,class:"col",style:"opacity:"+(o.side?.55:.85)+";transition-delay:"+(i*30)+"ms"},cg);
+  });
+  // FOV arc + annotations
+  const r=34, a1=dir-fov/2, a2=dir+fov/2;
+  el("path",{d:`M${P[0]+Math.cos(a1)*r} ${P[1]+Math.sin(a1)*r} A${r} ${r} 0 0 1 ${P[0]+Math.cos(a2)*r} ${P[1]+Math.sin(a2)*r}`,class:"lead"},ag);
+  const t=el("text",{x:262,y:192,class:"note"},ag);t.textContent="FOV 66° · no fish-eye";
+  const t2=el("text",{x:262,y:166,class:"sm"},ag);t2.textContent="h = k / (d·cos Δθ)";
+  const t3=el("text",{x:262,y:178,class:"sm"},ag);t3.textContent="E/W faces shaded";
+
+</script>

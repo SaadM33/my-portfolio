@@ -1,0 +1,37 @@
+          <svg viewBox="0 0 380 210" aria-label="Clients connect to a single poll loop which routes to channels">
+            <!-- clients -->
+            <g>
+              <rect class="part" x="6" y="22" width="78" height="30" style="--i:0"/><text x="45" y="41" text-anchor="middle" class="lbl">irssi</text>
+              <rect class="part" x="6" y="88" width="78" height="30" style="--i:1"/><text x="45" y="107" text-anchor="middle" class="lbl">nc -C</text>
+              <rect class="part" x="6" y="154" width="78" height="30" style="--i:2"/><text x="45" y="173" text-anchor="middle" class="lbl">irssi</text>
+              <text x="6" y="14" class="sm">CLIENTS · TCP</text>
+            </g>
+            <!-- wires to poll -->
+            <path class="wire ln" pathLength="1" d="M84 37 H120 V95 H150" style="--i:0"/>
+            <path class="wire ln" pathLength="1" d="M84 103 H150" style="--i:1"/>
+            <path class="wire ln" pathLength="1" d="M84 169 H120 V111 H150" style="--i:2"/>
+            <path class="signal" pathLength="1" d="M84 37 H120 V95 H150" style="--i:0"/>
+            <path class="signal" pathLength="1" d="M84 103 H150" style="--i:1"/>
+            <path class="signal" pathLength="1" d="M84 169 H120 V111 H150" style="--i:2"/>
+            <!-- poll loop -->
+            <circle class="part" cx="196" cy="103" r="46" style="--i:3"/>
+            <circle class="ln thin dash" cx="196" cy="103" r="36"/>
+            <text x="196" y="100" text-anchor="middle" class="cond">poll()</text>
+            <text x="196" y="113" text-anchor="middle" class="sm">pollfd[n]</text>
+                        <!-- wires to channels -->
+            <path class="wire ln" pathLength="1" d="M242 103 H268 V52 H290" style="--i:3"/>
+            <path class="wire ln" pathLength="1" d="M242 103 H268 V154 H290" style="--i:4"/>
+            <path class="signal" pathLength="1" d="M242 103 H268 V52 H290" style="--i:3"/>
+            <path class="signal" pathLength="1" d="M242 103 H268 V154 H290" style="--i:4"/>
+            <!-- channels -->
+            <rect class="part" x="290" y="30" width="84" height="44" style="--i:4"/>
+            <text x="300" y="48" class="lbl">#general</text><text x="300" y="63" class="sm">@op · +t +k</text>
+            <rect class="part" x="290" y="132" width="84" height="44" style="--i:5"/>
+            <text x="300" y="150" class="lbl">#1337</text><text x="300" y="165" class="sm">+i · invite</text>
+            <text x="290" y="22" class="sm">CHANNELS</text>
+            <!-- annotation -->
+            <g class="ann">
+              <path class="lead" d="M196 149 V186 H232"/><circle class="lead-dot" cx="196" cy="149" r="2"/>
+              <text x="236" y="189" class="note">one thread, O_NONBLOCK</text>
+            </g>
+          </svg>

@@ -1,0 +1,10 @@
+---
+import Irc from "./diagrams/Irc.astro";
+import Inception from "./diagrams/Inception.astro";
+import Cub3d from "./diagrams/Cub3d.astro";
+import Minishell from "./diagrams/Minishell.astro";
+const { name } = Astro.props as { name: string };
+const map = { irc: Irc, inception: Inception, cub3d: Cub3d, minishell: Minishell } as const;
+const C = map[name as keyof typeof map];
+---
+{C && <C />}

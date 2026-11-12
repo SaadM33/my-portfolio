@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saad M. — Systems & Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efede6;
+    --paper-2:#e4e1d7;
+    --ink:#121212;
+    --hot:#ff5a1f;      /* safety orange */
+    --sun:#ffd23a;      /* used sparingly: highlights only */
+    --line:3px solid var(--ink);
+    --thin:2px solid var(--ink);
+    --shadow:6px 6px 0 var(--ink);
+    --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans:"Archivo", "Arial Narrow", Arial, sans-serif;
+    --pad:clamp(16px, 3vw, 40px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:17px;
+    line-height:1.45;
+    overflow-x:hidden;
+    /* visible construction grid */
+    background-image:
+      linear-gradient(to right, rgba(18,18,18,.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(18,18,18,.07) 1px, transparent 1px);
+    background-size:48px 48px;
+  }
+  a{color:inherit}
+  ::selection{background:var(--hot);color:var(--ink)}
+  .mono{font-family:var(--mono);font-size:12.5px;letter-spacing:.02em;text-transform:uppercase}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 var(--pad)}
+
+  /* ---------- top bar ---------- */
+  .bar{
+    position:sticky;top:0;z-index:20;
+    background:var(--paper);
+    border-bottom:var(--line);
+  }
+  .bar .wrap{display:grid;grid-template-columns:auto 1fr auto auto;align-items:stretch}
+  .bar .cell{padding:12px 18px;border-right:var(--thin);display:flex;align-items:center;gap:10px}
+  .bar .cell:first-child{border-left:var(--thin)}
+  .bar .logo{font-weight:900;font-variation-settings:"wdth" 70;font-size:22px;letter-spacing:-.01em;text-decoration:none}
+  .bar nav{display:flex;gap:0;padding:0}
+  .bar nav a{display:flex;align-items:center;padding:0 16px;text-decoration:none;border-right:var(--thin)}
+  .bar nav a:last-child{border-right:0}
+  .bar nav a:hover{background:var(--ink);color:var(--paper)}
+  .bar nav a b{color:var(--hot);margin-right:6px;font-weight:600}
+  .dot{width:9px;height:9px;background:#2bb24c;border:2px solid var(--ink);display:inline-block}
+
+  /* ---------- hero ---------- */
+  .hero{border-bottom:var(--line);position:relative}
+  .hero .wrap{display:grid;grid-template-columns:repeat(12,1fr);position:relative}
+  .hero-meta{
+    grid-column:1 / -1;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;
+    padding:22px 0 0;
+  }
+  h1{
+    grid-column:1 / -1;
+    font-weight:900;
+    font-variation-settings:"wdth" 68;
+    font-size:clamp(70px, 21vw, 360px);white-space:nowrap;
+    line-height:.8;
+    letter-spacing:-.035em;
+    margin:18px 0 0 -.04em;
+    text-transform:uppercase;
+  }
+  .mbr{display:none}
+  h1 .m{color:var(--hot);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+  .hero-low{
+    grid-column:1 / -1;
+    display:grid;grid-template-columns:repeat(12,1fr);
+    border-top:var(--line);margin-top:28px;
+  }
+  .lede{
+    grid-column:1 / span 7;
+    padding:28px 28px 32px 0;
+    border-right:var(--line);
+    font-size:clamp(22px,2.3vw,32px);
+    line-height:1.15;
+    font-weight:600;
+    font-variation-settings:"wdth" 90;
+    letter-spacing:-.01em;
+  }
+  .lede mark{background:var(--sun);padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .lede .actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:28px}
+  .spec{grid-column:8 / -1;align-self:start}
+  .spec dl{display:grid;grid-template-columns:auto 1fr}
+  .spec dt,.spec dd{padding:11px 0 11px 22px;border-bottom:var(--thin)}
+  .spec dt{font-family:var(--mono);font-size:12px;text-transform:uppercase;color:#555;padding-right:18px;border-right:var(--thin)}
+  .spec dd{font-family:var(--mono);font-size:14px;font-weight:500}
+  .spec dl > :nth-last-child(-n+2){border-bottom:0}
+
+  .sticker{
+    position:absolute;right:calc(var(--pad) + 10px);top:150px;
+    background:var(--sun);border:var(--line);box-shadow:5px 5px 0 var(--ink);
+    padding:12px 14px 10px;transform:rotate(6deg);
+    font-family:var(--mono);font-size:12px;line-height:1.35;text-transform:uppercase;font-weight:600;
+    text-align:center;cursor:grab;user-select:none;
+    transition:transform .2s;
+  }
+  .sticker strong{display:block;font-family:var(--sans);font-size:34px;font-weight:900;font-variation-settings:"wdth" 75;line-height:.9;letter-spacing:-.02em}
+  .sticker:hover{transform:rotate(-3deg) scale(1.04)}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    font-family:var(--mono);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.03em;
+    display:inline-flex;align-items:center;gap:10px;
+    padding:14px 20px;border:var(--line);background:var(--paper);color:var(--ink);
+    box-shadow:var(--shadow);text-decoration:none;cursor:pointer;
+    transition:transform .08s ease, box-shadow .08s ease, background .15s;
+  }
+  .btn:hover{background:var(--sun)}
+  .btn:active,.btn.pressed{transform:translate(6px,6px);box-shadow:0 0 0 var(--ink)}
+  .btn.hot{background:var(--hot)}
+  .btn.hot:hover{background:var(--ink);color:var(--paper)}
+  .btn .k{border:2px solid currentColor;padding:0 5px;font-size:11px}
+
+  /* ---------- ticker ---------- */
+  .ticker{background:var(--ink);color:var(--paper);border-bottom:var(--line);overflow:hidden;white-space:nowrap}
+  .ticker .track{display:inline-flex;animation:run 38s linear infinite;padding:14px 0}
+  .ticker:hover .track{animation-play-state:paused}
+  .ticker span{font-family:var(--sans);font-weight:800;font-variation-settings:"wdth" 80;font-size:26px;text-transform:uppercase;letter-spacing:.01em;padding:0 22px;display:inline-flex;align-items:center;gap:22px}
+  .ticker span::after{content:"";width:12px;height:12px;background:var(--hot);display:inline-block;transform:rotate(45deg);margin-left:22px}
+  @keyframes run{to{transform:translateX(-50%)}}
+  @media (prefers-reduced-motion:reduce){.ticker .track{animation:none}}
+
+  /* ---------- sections ---------- */
+  section{border-bottom:var(--line)}
+  .sec-head{display:grid;grid-template-columns:repeat(12,1fr);border-bottom:var(--line)}
+  .sec-head .num{grid-column:span 2;padding:18px 0;border-right:var(--line);font-family:var(--mono);font-weight:600;font-size:14px}
+  .sec-head h2{grid-column:span 7;padding:12px 0 8px 24px;font-weight:900;font-variation-settings:"wdth" 70;font-size:clamp(44px,6vw,88px);line-height:.88;text-transform:uppercase;letter-spacing:-.03em}
+  .sec-head .aside{grid-column:span 3;padding:18px 0 18px 20px;border-left:var(--line);align-self:stretch;display:flex;align-items:flex-end}
+
+  /* about */
+  .about{display:grid;grid-template-columns:repeat(12,1fr)}
+  .about .side{grid-column:span 2;border-right:var(--line);padding:24px 18px 24px 0}
+  .ascii{font-family:var(--mono);font-size:11px;line-height:1.15;white-space:pre;color:#333}
+  .about .body{grid-column:span 6;padding:28px 32px 36px 24px;border-right:var(--line)}
+  .about .body p{font-size:clamp(19px,1.6vw,23px);line-height:1.38;margin-bottom:18px;max-width:38em}
+  .about .body p:first-child{font-weight:700;font-variation-settings:"wdth" 88;font-size:clamp(24px,2.2vw,32px);line-height:1.15;letter-spacing:-.01em}
+  .about .body code{font-family:var(--mono);font-size:.82em;background:var(--ink);color:var(--paper);padding:1px 6px}
+  .now{grid-column:span 4;padding:28px 0 32px 24px}
+  .now h3{margin-bottom:14px}
+  .now ul{list-style:none;border-top:var(--thin)}
+  .now li{display:grid;grid-template-columns:28px 1fr;gap:6px;padding:12px 0;border-bottom:var(--thin);font-size:16px}
+  .now li i{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--hot);font-weight:600;padding-top:3px}
+  .skills{display:grid;grid-template-columns:1fr 1fr;margin-top:22px;border:var(--thin)}
+  .skills div{padding:10px 12px;border-bottom:var(--thin)}
+  .skills div:nth-child(odd){border-right:var(--thin)}
+  .skills div:nth-last-child(-n+2){border-bottom:0}
+  .skills b{display:block;font-family:var(--mono);font-size:11px;text-transform:uppercase;color:#666;font-weight:500}
+  .skills span{font-weight:700;font-size:15px}
+
+  /* projects */
+  .filters{display:flex;flex-wrap:wrap;gap:12px;padding:22px 0}
+  .filters .btn{padding:9px 14px;font-size:12.5px;box-shadow:4px 4px 0 var(--ink)}
+  .filters .btn:active{transform:translate(4px,4px)}
+  .filters .btn[aria-pressed="true"]{background:var(--ink);color:var(--paper);transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+  .filters .count{margin-left:auto;align-self:center}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:26px;padding:6px 0 48px}
+  .card{
+    border:var(--line);background:var(--paper);box-shadow:var(--shadow);
+    display:flex;flex-direction:column;
+    transition:transform .12s, box-shadow .12s, opacity .2s;
+  }
+  .card:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink)}
+  .card.hide{display:none}
+  .card.w4{grid-column:span 4}.card.w3{grid-column:span 3}.card.w2{grid-column:span 2}
+  .card .top{display:flex;justify-content:space-between;align-items:center;border-bottom:var(--line);padding:8px 14px;background:var(--paper-2)}
+  .card .top .tag{background:var(--ink);color:var(--paper);padding:2px 7px}
+  .card .main{padding:18px 18px 16px;flex:1}
+  .card h3{font-weight:900;font-variation-settings:"wdth" 72;font-size:clamp(38px,4.2vw,64px);line-height:.86;letter-spacing:-.03em;margin-bottom:12px;word-break:break-word}
+  .card.w2 h3{font-size:clamp(34px,3vw,46px)}
+  .card p{font-size:16.5px;line-height:1.4;max-width:34em}
+  .card ul.feat{list-style:none;margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+  .card ul.feat li{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;border:2px solid var(--ink);padding:2px 7px}
+  .card table{width:100%;border-collapse:collapse;border-top:var(--line);font-family:var(--mono);font-size:12.5px}
+  .card td{padding:8px 14px;border-bottom:var(--thin);vertical-align:top}
+  .card tr:last-child td{border-bottom:0}
+  .card td:first-child{width:38%;border-right:var(--thin);text-transform:uppercase;color:#555}
+  .card td a{font-weight:600;text-decoration-thickness:2px;text-underline-offset:3px}
+  .card td a:hover{background:var(--sun)}
+  .card.feature{background:var(--hot)}
+  .card.feature .top{background:var(--ink);color:var(--paper)}
+  .card.feature .top .tag{background:var(--paper);color:var(--ink)}
+  .card.feature td:first-child{color:var(--ink)}
+  .card.feature ul.feat li{background:var(--paper)}
+  .card.feature .main{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+  .term{background:var(--ink);color:#e9e6dc;font-family:var(--mono);font-size:12px;line-height:1.5;padding:12px 14px;border:var(--thin);align-self:start;white-space:pre;overflow:hidden}
+  .term .c{color:var(--sun)} .term .g{color:#8be38f}
+  .bar-loc{height:12px;border:2px solid var(--ink);margin-top:6px;background:var(--paper)}
+  .bar-loc i{display:block;height:100%;background:var(--ink)}
+
+  /* log */
+  .log{width:100%;border-collapse:collapse}
+  .log td{border-bottom:var(--line);padding:22px 18px 22px 0;vertical-align:top}
+  .log tr:last-child td{border-bottom:0}
+  .log .yr{width:16.66%;font-family:var(--mono);font-weight:600;font-size:15px;border-right:var(--line)}
+  .log .what{padding-left:24px;width:50%}
+  .log .what b{display:block;font-weight:900;font-variation-settings:"wdth" 75;font-size:clamp(28px,3vw,42px);line-height:.95;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:8px}
+  .log .note{border-left:var(--line);padding-left:20px;font-size:15.5px}
+  .log .note .mono{display:block;margin-bottom:6px;color:#555}
+  .now-badge{background:var(--hot);border:2px solid var(--ink);padding:1px 6px;margin-left:6px}
+
+  /* contact */
+  .contact{background:var(--ink);color:var(--paper);border-bottom:0}
+  .contact .wrap{display:grid;grid-template-columns:repeat(12,1fr);padding-top:44px;padding-bottom:40px;gap:0}
+  .contact h2{grid-column:1 / -1;font-weight:900;font-variation-settings:"wdth" 66;font-size:clamp(70px,14vw,210px);line-height:.8;letter-spacing:-.035em;text-transform:uppercase}
+  .contact h2 span{color:var(--hot)}
+  .contact .lines{grid-column:1 / span 8;margin-top:36px;border-top:3px solid var(--paper)}
+  .contact .lines a,.contact .lines button{
+    display:grid;grid-template-columns:150px 1fr auto;align-items:center;width:100%;
+    padding:18px 0;border:0;border-bottom:3px solid var(--paper);background:none;color:inherit;text-align:left;cursor:pointer;
+    font-family:var(--sans);font-weight:800;font-variation-settings:"wdth" 85;font-size:clamp(22px,2.6vw,36px);text-decoration:none;letter-spacing:-.01em;
+  }
+  .contact .lines .mono{color:#aaa;font-weight:500}
+  .contact .lines a:hover,.contact .lines button:hover{background:var(--hot);color:var(--ink)}
+  .contact .lines a:hover .mono,.contact .lines button:hover .mono{color:var(--ink)}
+  .contact .lines .go{font-family:var(--mono);font-size:13px;padding-right:12px}
+  .contact .side{grid-column:10 / -1;margin-top:36px;font-family:var(--mono);font-size:13px;line-height:1.6;color:#cfccc2}
+  .contact .side p{margin-bottom:14px}
+  .contact .side b{color:var(--paper)}
+  footer{background:var(--ink);color:#9b988f;border-top:3px solid var(--paper)}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:16px;padding-bottom:18px}
+
+  .toast{visibility:hidden;position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);background:var(--sun);border:var(--line);box-shadow:var(--shadow);padding:10px 16px;font-family:var(--mono);font-weight:600;font-size:13px;text-transform:uppercase;transition:transform .2s;z-index:50}
+  .toast.on{visibility:visible;transform:translate(-50%,0)}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1100px){
+    .card.w4,.card.w3,.card.w2{grid-column:span 3}
+    .card.feature{grid-column:1 / -1}
+    .sticker{top:96px}
+  }
+  @media (max-width:860px){
+    body{font-size:16px}
+    .bar .wrap{grid-template-columns:1fr auto}
+    .bar nav.cell{display:none}
+    .bar .cell.clock{display:none}
+    .bar .cell:last-child{border-right:var(--thin)}
+    .lede,.spec{grid-column:1 / -1}
+    .lede{border-right:0;border-bottom:var(--line);padding-right:0}
+    .spec dt,.spec dd{padding-left:0}
+    .spec dd{padding-left:14px}
+    .mbr{display:inline}
+    h1{font-size:38vw;line-height:.82}
+    .sticker{right:var(--pad);top:calc(var(--sy,0px) + 230px);transform:rotate(7deg);padding:8px 10px 7px;font-size:10px}
+    .sticker strong{font-size:24px}
+    .sec-head .num{grid-column:1 / -1;border-right:0;border-bottom:var(--thin);padding:10px 0}
+    .sec-head h2{grid-column:1 / -1;padding:12px 0 10px}
+    .sec-head .aside{display:none}
+    .about .side{display:none}
+    .about .body,.now{grid-column:1 / -1;border-right:0;padding-left:0;padding-right:0}
+    .about .body{border-bottom:var(--line)}
+    .grid{grid-template-columns:1fr;gap:22px}
+    .card.w4,.card.w3,.card.w2,.card.feature{grid-column:1 / -1}
+    .card.feature .main{grid-template-columns:1fr}
+    .filters .count{display:none}
+    .log tr{display:grid;grid-template-columns:1fr;border-bottom:var(--line)}
+    .log tr:last-child{border-bottom:0}
+    .log td{border:0;padding:0}
+    .log .yr{width:auto;border-right:0;padding:18px 0 6px}
+    .log .what{width:auto;padding:0 0 8px}
+    .log .note{border-left:0;padding:0 0 20px}
+    .contact .lines,.contact .side{grid-column:1 / -1}
+    .contact .lines a,.contact .lines button{grid-template-columns:1fr auto;font-size:22px;word-break:break-all}
+    .contact .lines .mono{grid-column:1 / -1;font-size:11px}
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="cell logo" href="#top">SAAD M.</a>
+    <nav class="cell mono" aria-label="Sections">
+      <a href="#about"><b>01</b>About</a>
+      <a href="#work"><b>02</b>Work</a>
+      <a href="#log"><b>03</b>Log</a>
+      <a href="#contact"><b>04</b>Contact</a>
+    </nav>
+    <div class="cell mono clock" title="Local time in Morocco">MA <span id="clock">--:--:--</span></div>
+    <div class="cell mono"><span class="dot"></span>Open to internships</div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-meta mono">
+        <span>Portfolio / rev. 2026.11</span>
+        <span>saadm.tech</span>
+        <span>Sheet 1 of 1</span>
+      </div>
+      <h1>Saad<br class="mbr"> <span class="m">M.</span></h1>
+
+      <div class="sticker" id="sticker" title="drag me">
+        Student at
+        <strong>1337</strong>
+        42 Network &middot; MA
+      </div>
+
+      <div class="hero-low">
+        <div class="lede">
+          I write <mark>C and C++ that talks to sockets</mark>, put things in containers until they behave, and build the web bits on top. Currently a student at 1337, the 42 school in Morocco.
+          <div class="actions">
+            <a class="btn hot" href="#work">See the work <span aria-hidden="true">&darr;</span></a>
+            <button class="btn" data-copy="hello@saadm.tech">hello@saadm.tech <span class="k">copy</span></button>
+          </div>
+        </div>
+        <div class="spec">
+          <dl>
+            <dt>Role</dt><dd>Software eng. student</dd>
+            <dt>School</dt><dd>1337 / 42 Network</dd>
+            <dt>Before</dt><dd>ALX Software Eng.</dd>
+            <dt>Stack</dt><dd>C, C++98, Docker, React, Python</dd>
+            <dt>Based</dt><dd>Morocco, GMT+1</dd>
+            <dt>Git</dt><dd><a href="https://github.com/SaadM33">github.com/SaadM33</a></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="track" id="track">
+      <span>C</span><span>C++98</span><span>poll()</span><span>Makefile</span><span>Valgrind</span><span>Docker</span><span>Compose</span><span>NGINX / TLS</span><span>MariaDB</span><span>Bash</span><span>React</span><span>JavaScript</span><span>Python</span><span>Flask</span><span>MySQL</span><span>Git</span><span>Linux</span>
+    </div>
+  </div>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="num">01 /</div>
+        <h2>About</h2>
+        <div class="aside mono">Read time: ~40s</div>
+      </div>
+      <div class="about">
+        <div class="side">
+<pre class="ascii">  +--------+
+  |  $ _   |
+  |        |
+  +--------+
+   \______/
+</pre>
+          <p class="mono" style="margin-top:14px;color:#555">fig. 1 &mdash; where most of this happened</p>
+        </div>
+        <div class="body">
+          <p>I like the layer where things can actually go wrong: file descriptors, signals, a server that has to keep 40 clients happy without a single thread.</p>
+          <p>At 1337 there are no teachers and no slides &mdash; just a project spec, peers, and a strict norm. That's how I ended up writing an IRC server around <code>poll()</code>, a shell that survives <code>Ctrl-C</code> mid-heredoc, and a Docker stack where every image is built from a bare Debian base.</p>
+          <p>Before that, ALX gave me the web side: Python, Flask, MySQL, and a lot of HTML written by hand. These days I'm mixing both &mdash; small web services that are boring to run.</p>
+        </div>
+        <div class="now">
+          <h3 class="mono">Right now</h3>
+          <ul>
+            <li><i>01</i>Finishing the 1337 common core</li>
+            <li><i>02</i>Shipping a URL shortener I actually use</li>
+            <li><i>03</i>Building HackSpace with a small team</li>
+            <li><i>04</i><span>Reading <em>Beej's Guide</em>, again</span></li>
+          </ul>
+          <div class="skills">
+            <div><b>Systems</b><span>C, C++98, Make</span></div>
+            <div><b>Infra</b><span>Docker, NGINX</span></div>
+            <div><b>Web</b><span>React, JS, Flask</span></div>
+            <div><b>Data</b><span>MariaDB, MySQL</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="work">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="num">02 /</div>
+        <h2>Selected work</h2>
+        <div class="aside mono">7 entries &middot; LOC approx.</div>
+      </div>
+
+      <div class="filters" role="group" aria-label="Filter projects">
+        <button class="btn" aria-pressed="true" data-f="all">All</button>
+        <button class="btn" aria-pressed="false" data-f="sys">Systems</button>
+        <button class="btn" aria-pressed="false" data-f="infra">Infra</button>
+        <button class="btn" aria-pressed="false" data-f="web">Web</button>
+        <span class="count mono" id="count">Showing 7 / 7</span>
+      </div>
+
+      <div class="grid" id="grid">
+
+        <article class="card feature w4" data-k="sys">
+          <div class="top mono"><span>P-01 &middot; Featured</span><span class="tag">Systems</span></div>
+          <div class="main">
+            <div>
+              <h3>ft_irc</h3>
+              <p>An IRC server in C++98. One process, one <b>poll()</b> loop, non-blocking sockets &mdash; handles many clients at once, channels, modes and operator commands. Tested against irssi until it stopped complaining.</p>
+              <ul class="feat"><li>Non-blocking I/O</li><li>JOIN / KICK / MODE</li><li>Partial reads</li></ul>
+            </div>
+<pre class="term"><span class="c">$</span> ./ircserv 6667 hunter2
+[srv] listening on :6667
+[srv] fd 5 connected
+<span class="g">:saad JOIN #1337</span>
+<span class="g">:saad MODE #1337 +o yas</span>
+[srv] fd 7 hung up, cleaned
+<span class="c">$</span> _</pre>
+          </div>
+          <table>
+            <tr><td>Language</td><td>C++98</td></tr>
+            <tr><td>Lines</td><td>~2,400<div class="bar-loc"><i style="width:62%"></i></div></td></tr>
+            <tr><td>Year</td><td>2025</td></tr>
+            <tr><td>Repo</td><td><a href="https://github.com/SaadM33/Internet-Relay-Chat">SaadM33/Internet-Relay-Chat</a></td></tr>
+          </table>
+        </article>
+
+        <article class="card w2" data-k="infra">
+          <div class="top mono"><span>P-02</span><span class="tag">Infra</span></div>
+          <div class="main">
+            <h3>Inception</h3>
+            <p>A Docker Compose stack: NGINX with TLS, WordPress on php-fpm, MariaDB. Each service in its own container, built from scratch. No pulled images.</p>
+            <ul class="feat"><li>TLS 1.2/1.3</li><li>Volumes</li><li>Bridge net</li></ul>
+          </div>
+          <table>
+            <tr><td>Lang</td><td>Dockerfile, sh</td></tr>
+            <tr><td>Lines</td><td>~450<div class="bar-loc"><i style="width:12%"></i></div></td></tr>
+            <tr><td>Year</td><td>2025</td></tr>
+            <tr><td>Repo</td><td><a href="https://github.com/SaadM33/inception">SaadM33/inception</a></td></tr>
+          </table>
+        </article>
+
+        <article class="card w3" data-k="sys">
+          <div class="top mono"><span>P-03</span><span class="tag">Systems</span></div>
+          <div class="main">
+            <h3>cub3D</h3>
+            <p>A Wolfenstein-style raycaster in C on MiniLibX. Textured walls, a minimap, wall collisions, and a map parser that rejects anything not closed.</p>
+            <ul class="feat"><li>DDA raycasting</li><li>Textures</li><li>Minimap</li></ul>
+          </div>
+          <table>
+            <tr><td>Language</td><td>C / MiniLibX</td></tr>
+            <tr><td>Lines</td><td>~3,100<div class="bar-loc"><i style="width:80%"></i></div></td></tr>
+            <tr><td>Year</td><td>2025</td></tr>
+            <tr><td>Repo</td><td><a href="https://github.com/SaadM33/cub3d">SaadM33/cub3d</a></td></tr>
+          </table>
+        </article>
+
+        <article class="card w3" data-k="sys">
+          <div class="top mono"><span>P-04</span><span class="tag">Systems</span></div>
+          <div class="main">
+            <h3>minishell</h3>
+            <p>A small bash in C: pipes, redirections, heredoc, <code>$VAR</code> expansion, signal handling and the usual builtins. Hardest part was quoting, not pipes.</p>
+            <ul class="feat"><li>Pipes</li><li>Heredoc</li><li>Signals</li><li>Builtins</li></ul>
+          </div>
+          <table>
+            <tr><td>Language</td><td>C</td></tr>
+            <tr><td>Lines</td><td>~3,900<div class="bar-loc"><i style="width:100%"></i></div></td></tr>
+            <tr><td>Year</td><td>2025</td></tr>
+            <tr><td>Repo</td><td><a href="https://github.com/SaadM33/minishell">SaadM33/minishell</a></td></tr>
+          </table>
+        </article>
+
+        <article class="card w2" data-k="web">
+          <div class="top mono"><span>P-05 &middot; New</span><span class="tag">Web</span></div>
+          <div class="main">
+            <h3>url-short&shy;ener</h3>
+            <p>A small URL shortener web service. Short codes, redirects, click counts. Built to be dull to operate.</p>
+          </div>
+          <table>
+            <tr><td>Lang</td><td>JavaScript</td></tr>
+            <tr><td>Year</td><td>2026</td></tr>
+            <tr><td>Status</td><td>Active</td></tr>
+          </table>
+        </article>
+
+        <article class="card w2" data-k="web">
+          <div class="top mono"><span>P-06 &middot; New</span><span class="tag">Team</span></div>
+          <div class="main">
+            <h3>Hack&shy;Space</h3>
+            <p>A collaborative team project &mdash; shared repo, code review, and splitting work without stepping on each other.</p>
+          </div>
+          <table>
+            <tr><td>Type</td><td>Collaborative</td></tr>
+            <tr><td>Year</td><td>2026</td></tr>
+            <tr><td>Status</td><td>In progress</td></tr>
+          </table>
+        </article>
+
+        <article class="card w2" data-k="web">
+          <div class="top mono"><span>P-07</span><span class="tag">Web</span></div>
+          <div class="main">
+            <h3>AirBnB clone</h3>
+            <p>The ALX classic: a Python command console, a storage engine swapped from JSON to MySQL, then Flask on top.</p>
+          </div>
+          <table>
+            <tr><td>Lang</td><td>Python, Flask</td></tr>
+            <tr><td>Lines</td><td>~2,000<div class="bar-loc"><i style="width:52%"></i></div></td></tr>
+            <tr><td>Year</td><td>2023&ndash;24</td></tr>
+          </table>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="log">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="num">03 /</div>
+        <h2>Log</h2>
+        <div class="aside mono">Education &amp; training</div>
+      </div>
+      <table class="log">
+        <tr>
+          <td class="yr">2025 &mdash; now <span class="now-badge mono">live</span></td>
+          <td class="what"><b>1337 Coding School</b>42 Network &middot; Morocco</td>
+          <td class="note"><span class="mono">Peer-to-peer, project-based</span>Common core in C and C++: Unix processes, networking, graphics, containers. Graded by peers, against a strict norm.</td>
+        </tr>
+        <tr>
+          <td class="yr">2023 &mdash; 2024</td>
+          <td class="what"><b>ALX Software Engineering</b>Full program</td>
+          <td class="note"><span class="mono">Foundations</span>C fundamentals, Python, SQL, Flask and the AirBnB clone. Where I learned to read man pages before asking.</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <h2>Say <span>hello.</span></h2>
+      <div class="lines">
+        <button data-copy="hello@saadm.tech"><span class="mono">Email</span>hello@saadm.tech<span class="go">[copy]</span></button>
+        <a href="https://github.com/SaadM33"><span class="mono">GitHub</span>github.com/SaadM33<span class="go">&nearr;</span></a>
+        <a href="#"><span class="mono">LinkedIn</span>in/saadm<span class="go">&nearr;</span></a>
+      </div>
+      <div class="side">
+        <p><b>Looking for:</b> internships and junior roles in backend, systems or infra.</p>
+        <p><b>Reply time:</b> usually within a day, unless an exam is running.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap mono">
+    <span>&copy; 2026 Saad M.</span>
+    <span>Hand-written HTML. No framework, no tracking.</span>
+    <a href="#top">Back to top &uarr;</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status">Copied to clipboard</div>
+
+<script>
+  // duplicate ticker contents for a seamless loop
+  const track = document.getElementById('track');
+  track.innerHTML += track.innerHTML;
+
+  // Morocco clock
+  const clock = document.getElementById('clock');
+  const tick = () => {
+    try { clock.textContent = new Date().toLocaleTimeString('en-GB', {timeZone:'Africa/Casablanca'}); }
+    catch(e){ clock.textContent = new Date().toTimeString().slice(0,8); }
+  };
+  tick(); setInterval(tick, 1000);
+
+  // copy email
+  const toast = document.getElementById('toast');
+  let tt;
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.copy;
+    (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).catch(()=>{});
+    toast.textContent = 'Copied: ' + v;
+    toast.classList.add('on'); clearTimeout(tt);
+    tt = setTimeout(() => toast.classList.remove('on'), 1600);
+  }));
+
+  // filters
+  const btns = document.querySelectorAll('.filters [data-f]');
+  const cards = document.querySelectorAll('#grid .card');
+  const count = document.getElementById('count');
+  btns.forEach(b => b.addEventListener('click', () => {
+    btns.forEach(x => x.setAttribute('aria-pressed', x === b));
+    let n = 0;
+    cards.forEach(c => {
+      const show = b.dataset.f === 'all' || c.dataset.k === b.dataset.f;
+      c.classList.toggle('hide', !show); if (show) n++;
+    });
+    count.textContent = 'Showing ' + n + ' / ' + cards.length;
+  }));
+
+  // draggable sticker (pointer), stays rotated
+  const st = document.getElementById('sticker');
+  let sx, sy, ox = 0, oy = 0, drag = false;
+  st.addEventListener('pointerdown', e => { drag = true; sx = e.clientX - ox; sy = e.clientY - oy; st.setPointerCapture(e.pointerId); st.style.cursor='grabbing'; st.style.transition='none'; });
+  st.addEventListener('pointermove', e => { if(!drag) return; ox = e.clientX - sx; oy = e.clientY - sy; st.style.transform = `translate(${ox}px,${oy}px) rotate(-4deg)`; });
+  const end = () => { drag = false; st.style.cursor='grab'; st.style.transition=''; st.style.transform = `translate(${ox}px,${oy}px) rotate(6deg)`; };
+  st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end);
+</script>
+</body>
+</html>

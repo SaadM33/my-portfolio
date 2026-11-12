@@ -3,3 +3,5 @@ dist/
 .astro/
 .env
 .DS_Store
+mockups/github-research.md
+mockups/BRIEF.md

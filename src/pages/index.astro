@@ -1,24 +1,177 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Nav from "../components/Nav.astro";
-import Hero from "../components/Hero.astro";
-import About from "../components/About.astro";
-import Skills from "../components/Skills.astro";
-import Projects from "../components/Projects.astro";
-import Experience from "../components/Experience.astro";
-import Contact from "../components/Contact.astro";
-import Footer from "../components/Footer.astro";
+import Stack from "../components/diagrams/Stack.astro";
+import Diagram from "../components/Diagram.astro";
+import { site, hero, about, details, parts, revisions, contact } from "../data/site";
+
+const gh = (repo: string) => `https://github.com/${repo}`;
+// "*word*" → <em>word</em> (red underline)
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const lede = esc(hero.lede).replace(/\*(.+?)\*/g, "<em>$1</em>");
+const year = new Date().getFullYear();
+
+const links = [
+  { k: "Email", v: site.email, href: `mailto:${site.email}`, arrow: "→" },
+  { k: "GitHub", v: `github.com/${site.github}`, href: gh(site.github), arrow: "↗" },
+  ...(site.linkedin ? [{ k: "LinkedIn", v: site.linkedin, href: `https://${site.linkedin}`, arrow: "↗" }] : []),
+];
 ---
 
 <Layout>
-  <Nav />
-  <main id="main">
-    <Hero />
-    <About />
-    <Skills />
-    <Projects />
-    <Experience />
-    <Contact />
-  </main>
-  <Footer />
+  <div class="frame">
+    <div class="zones top" aria-hidden="true"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span></div>
+    <div class="zones left" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+    <span class="reg tl" aria-hidden="true"><i></i></span><span class="reg tr" aria-hidden="true"><i></i></span>
+    <span class="reg bl" aria-hidden="true"><i></i></span><span class="reg br" aria-hidden="true"><i></i></span>
+
+    <header class="strip">
+      <div class="id"><b>{site.drawingNo}</b><span class="hide-s">· drawing set</span></div>
+      <nav aria-label="Sections">
+        <a href="#notes"><span>02</span>Notes</a>
+        <a href="#details"><span>03</span>Details</a>
+        <a href="#revisions"><span>04</span>Revisions</a>
+        <a href="#contact"><span>05</span>Contact</a>
+      </nav>
+      <div class="stamp">Rev {site.rev}</div>
+    </header>
+
+    <main id="main">
+      <!-- SHEET 1 — GENERAL ARRANGEMENT -->
+      <section class="sheet hero" id="top">
+        <div>
+          <div class="dwg-label"><span class="red">Sheet 1/5</span>General arrangement</div>
+          <div class="name-wrap">
+            <h1 class="name">{site.name}<span class="dot">.</span><span class="sr-only"> — {site.fullName}</span></h1>
+            <div class="dim" aria-hidden="true">
+              <span class="tk l"></span><span class="tk r"></span><span class="ar l"></span><span class="ar r"></span>
+              <span class="val">{hero.label}</span>
+            </div>
+          </div>
+          <p class="lede" set:html={lede} />
+          <ul class="hero-notes">
+            {hero.notes.map((n, i) => <li><b>N{i + 1}</b>{n}</li>)}
+          </ul>
+          <div class="hero-cta">
+            <a class="btn primary" href="#details">View details <span>↓</span></a>
+            <a class="btn" href={gh(site.github)}>github/{site.github} <span>↗</span></a>
+          </div>
+        </div>
+
+        <figure class="hero-fig draw" aria-label="Section drawing of my skill stack">
+          <Stack />
+          <figcaption class="cap"><span>Fig. 1 — Skill stack, sectioned</span><span>NTS</span></figcaption>
+        </figure>
+
+        <div class="titleblock" aria-label="Title block">
+          <div class="big"><small>Title</small><strong>{site.name.toUpperCase()}. — PORTFOLIO</strong></div>
+          <div><small>Drawn by</small><strong>{site.initials}</strong></div>
+          <div><small>Checked</small><strong>norminette</strong></div>
+          <div><small>Dwg no.</small><strong>{site.drawingNo}</strong></div>
+          <div><small>Scale</small><strong>1:1</strong></div>
+          <div><small>Sheet</small><strong>1 of 5</strong></div>
+          <div><small>Rev</small><strong class="red">{site.rev}</strong></div>
+        </div>
+      </section>
+
+      <!-- SHEET 2 — NOTES -->
+      <section class="sheet" id="notes">
+        <div class="sheet-head"><span class="sheet-no">SHEET 2 / 5</span><h2>General notes</h2><span class="rule"></span><span class="meta">READ BEFORE PROCEEDING</span></div>
+        <div class="notes-grid">
+          <div class="notes">
+            <h3>Notes</h3>
+            <ol>{about.notes.map((n) => <li>{n}</li>)}</ol>
+            <p class="hand">{about.handNote}</p>
+          </div>
+          <dl class="spec">
+            <div class="hd"><span>Specification</span><span>{site.initials}</span></div>
+            {about.spec.map((r) => <div class="row"><dt>{r.k}</dt><dd>{r.v}{r.tol && <span class="tol">{r.tol}</span>}</dd></div>)}
+          </dl>
+        </div>
+      </section>
+
+      <!-- SHEET 3 — DETAILS -->
+      <section class="sheet" id="details">
+        <div class="sheet-head"><span class="sheet-no">SHEET 3 / 5</span><h2>Details</h2><span class="rule"></span><span class="meta">{details.length} DETAILS · {parts.length} PARTS</span></div>
+        <p class="hint">— hover a detail to run the signal through it.</p>
+
+        <div class="details">
+          {details.map((d) => (
+            <article class="detail">
+              <div class="detail-top">
+                <div class="detail-tag"><span class="bubble">{d.id}</span><div><h3>{d.title}</h3><div class="sub">{d.sub}</div></div></div>
+                <div class="scale" set:html={d.scale} />
+              </div>
+              <div class="fig draw"><Diagram name={d.diagram} /></div>
+              <p class="desc">{d.description}</p>
+              <div class="detail-foot">
+                <span class="mat">{d.material}</span>
+                {d.repo && <a href={gh(d.repo)}>{d.repo}</a>}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div class="bom-wrap">
+          <div class="bom-title"><span>Parts list — other work</span><span class="red">{parts.length} items</span></div>
+          <table class="bom">
+            <thead><tr><th>Item</th><th>Part</th><th>Description</th><th class="qty">Year</th><th class="st">Status</th></tr></thead>
+            <tbody>
+              {parts.map((p, i) => (
+                <tr>
+                  <td>{String(details.length + i + 1).padStart(2, "0")}</td>
+                  <td class="nm">
+                    {p.repo ? <a href={gh(p.repo)}>{p.name}</a> : p.name}
+                    {p.isNew && <span class="new">NEW</span>}
+                  </td>
+                  <td>{p.description}</td>
+                  <td class="qty">{p.year}</td>
+                  <td class="st">{p.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SHEET 4 — REVISIONS -->
+      <section class="sheet" id="revisions">
+        <div class="sheet-head"><span class="sheet-no">SHEET 4 / 5</span><h2>Revision history</h2><span class="rule"></span><span class="meta">EDUCATION · EXPERIENCE</span></div>
+        <table class="revs">
+          <thead><tr><th>Rev</th><th>Date</th><th>Description</th><th class="by">Issued by</th></tr></thead>
+          <tbody>
+            {revisions.map((r) => (
+              <tr class:list={[{ current: r.current }]}>
+                <td>{r.rev}</td><td class="date">{r.date}</td>
+                <td class="desc2"><b>{r.title}</b> {r.text}</td><td class="by">{r.by}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div class="rev-note"><span>Superseded revisions are retained for reference.</span><span>Current: <b class="red">REV {revisions[0].rev}</b></span></div>
+      </section>
+
+      <!-- SHEET 5 — CONTACT -->
+      <section class="sheet" id="contact">
+        <div class="sheet-head"><span class="sheet-no">SHEET 5 / 5</span><h2>Approvals</h2><span class="rule"></span><span class="meta">CONTACT</span></div>
+        <div class="contact">
+          <div>
+            <h3>{contact.heading[0]}<span class="red">{contact.heading[1]}</span></h3>
+            <p>{contact.text}</p>
+          </div>
+          <div class="links">
+            {links.map((l) => <a href={l.href}><small>{l.k}</small><span>{l.v}</span><span aria-hidden="true">{l.arrow}</span></a>)}
+          </div>
+        </div>
+        <div class="endblock">
+          <div class="t"><small>Title</small><strong>{site.name.toUpperCase()}. — PORTFOLIO</strong></div>
+          <div><small>Drawn by</small><strong>{site.initials}</strong></div>
+          <div><small>Dwg no.</small><strong>{site.drawingNo}</strong></div>
+          <div><small>Sheet</small><strong>5 of 5</strong></div>
+          <div><small>Rev</small><strong class="red">{site.rev}</strong></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="foot"><span>Do not scale drawing. If in doubt, ask.</span><span>© {year} {site.initials} · drawn by hand in HTML</span></footer>
 </Layout>
