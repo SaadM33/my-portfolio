@@ -105,6 +105,7 @@ const links = [
               <p class="desc">{d.description}</p>
               <div class="detail-foot">
                 <span class="mat">{d.material}</span>
+                {d.lab && <a class="run-btn" href={d.lab}>▶ Run</a>}
                 {d.repo && <a href={gh(d.repo)}>{d.repo}</a>}
               </div>
             </article>

@@ -1,0 +1,263 @@
+---
+import LabLayout from "../../layouts/LabLayout.astro";
+
+const panes = [
+  { id: "alice", kind: "irssi", label: "irssi", who: "alice" },
+  { id: "bob", kind: "irssi", label: "irssi", who: "bob" },
+  { id: "nc", kind: "nc", label: "nc -C localhost 6667", who: "raw socket" },
+];
+---
+
+<LabLayout
+  title="ft_irc"
+  sheet="L1"
+  subtitle="Three clients talking to one IRC server through a single poll() loop. Type into any pane, or play the scripted tour."
+  repo="SaadM33/Internet-Relay-Chat"
+  note="TypeScript port of the C++98 command handling (the same 13 commands, numeric replies, error strings, password check and +i +t +k +o +l logic, including its quirks). The network is simulated in the page: no sockets are opened, poll()/accept()/recv()/send() are stand-ins that feed the diagram, and the irssi panes are a small stand-in client that turns /commands into raw lines."
+>
+  <div class="irc" id="irc">
+    <div class="irc-bar">
+      <div class="cmdline mono"><span class="pr">$</span> ./ircserv 6667 <b>pass42</b> <span class="dim">· listening on fd 3</span></div>
+      <div class="bar-btns">
+        <button type="button" class="ibtn primary" id="irc-tour">▶ Scripted tour</button>
+        <button type="button" class="ibtn" id="irc-reset">Reset server</button>
+      </div>
+      <p class="tour-cap mono" id="irc-cap" aria-live="polite">Password is <b>pass42</b>. alice and bob connect with irssi-style /commands; the nc pane sends raw lines (try <code>PASS pass42</code>, <code>NICK eve</code>, <code>USER eve 0 * :Eve</code>).</p>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Clients">
+      {panes.map((p, i) => (
+        <button type="button" role="tab" class="tab" id={`tab-${p.id}`} aria-controls={`pane-${p.id}`} aria-selected={i === 0 ? "true" : "false"} data-tab={p.id}>
+          {p.kind === "nc" ? "nc" : p.who}
+        </button>
+      ))}
+    </div>
+
+    <div class="panes">
+      {panes.map((p, i) => (
+        <section class:list={["pane", p.kind, { on: i === 0 }]} id={`pane-${p.id}`} data-pane={p.id} role="tabpanel" aria-labelledby={`tab-${p.id}`}>
+          <header class="ph">
+            <span class="pk">{p.label}{p.kind === "irssi" && <> · <b>{p.who}</b></>}</span>
+            <span class="pfd mono" data-fd>fd —</span>
+            {p.kind === "nc" && (
+              <span class="nc-ctl">
+                <label class="crlf"><input type="checkbox" data-crlf checked /> -C (CRLF)</label>
+                <button type="button" class="ibtn sm" data-connect>connect</button>
+                <button type="button" class="ibtn sm" data-close>^C close</button>
+              </span>
+            )}
+          </header>
+          {p.kind === "irssi" && <div class="chips" data-chips aria-label="Windows"></div>}
+          <div class="scroll" data-log role="log" aria-live="polite" aria-label={`${p.who} output`} tabindex="0"></div>
+          <form class="inp" data-form autocomplete="off">
+            <label class="pfx mono" for={`in-${p.id}`} data-prompt>{p.kind === "nc" ? ">" : "[(status)]"}</label>
+            <input id={`in-${p.id}`} data-input spellcheck="false" autocapitalize="off" placeholder={p.kind === "nc" ? "raw line, e.g. PASS pass42" : "/join #general  ·  /help"} />
+          </form>
+        </section>
+      ))}
+    </div>
+
+    <div class="lower">
+      <figure class="diag">
+        <div class="fig-h mono"><span>Fig. 1 · Server::ignite()</span><span>single thread · O_NONBLOCK</span></div>
+        <svg viewBox="0 0 520 290" id="irc-svg" role="img" aria-label="poll() loop: listening socket and three client sockets wired to one poll call">
+          <line class="ln thin dash" x1="260" y1="42" x2="260" y2="106" id="w-listen" />
+          <line class="ln" x1="128" y1="150" x2="216" y2="150" id="w-alice" />
+          <line class="ln" x1="392" y1="150" x2="304" y2="150" id="w-bob" />
+          <line class="ln" x1="260" y1="236" x2="260" y2="194" id="w-nc" />
+
+          <g class="node" id="n-listen">
+            <rect class="part" x="190" y="8" width="140" height="34" />
+            <text x="260" y="22" text-anchor="middle" class="lbl">fd 3 · listen()</text>
+            <text x="260" y="34" text-anchor="middle" class="sm">AF_INET :6667 · SO_REUSEADDR</text>
+            <text x="338" y="70" class="note ev" data-ev>POLLIN → accept()</text>
+          </g>
+          <g class="node" id="n-alice">
+            <rect class="part" x="8" y="128" width="120" height="44" />
+            <text x="18" y="146" class="lbl" data-t1>fd 4</text>
+            <text x="18" y="161" class="sm" data-t2>alice · irssi</text>
+            <text x="172" y="140" text-anchor="middle" class="note ev" data-ev>POLLIN</text>
+          </g>
+          <g class="node" id="n-bob">
+            <rect class="part" x="392" y="128" width="120" height="44" />
+            <text x="402" y="146" class="lbl" data-t1>fd 5</text>
+            <text x="402" y="161" class="sm" data-t2>bob · irssi</text>
+            <text x="348" y="140" text-anchor="middle" class="note ev" data-ev>POLLIN</text>
+          </g>
+          <g class="node" id="n-nc">
+            <rect class="part" x="190" y="236" width="140" height="44" />
+            <text x="200" y="254" class="lbl" data-t1>fd 6</text>
+            <text x="200" y="269" class="sm" data-t2>nc -C</text>
+            <text x="268" y="218" class="note ev" data-ev>POLLIN</text>
+          </g>
+
+          <circle class="part" cx="260" cy="150" r="44" id="n-poll" />
+          <circle class="ln thin dash" cx="260" cy="150" r="34" />
+          <text x="260" y="148" text-anchor="middle" class="cond">poll()</text>
+          <text x="260" y="162" text-anchor="middle" class="sm" id="irc-handler">waiting · -1</text>
+          <g id="irc-dots"></g>
+        </svg>
+        <div class="pfds mono" aria-label="poll_fds vector">
+          <div class="pfds-h">std::vector&lt;pollfd&gt; poll_fds</div>
+          <div class="pfds-row" id="irc-pfds"></div>
+        </div>
+        <figcaption class="mono">The server only registers POLLIN; replies are written with a direct <code>send()</code> from inside each handler, drawn here as the outgoing pulse.</figcaption>
+      </figure>
+
+      <div class="evlog">
+        <div class="fig-h mono"><span>Event log</span><button type="button" class="ibtn sm" id="irc-clearlog">clear</button></div>
+        <ol class="ev-list mono" id="irc-log" aria-label="Server event log"></ol>
+      </div>
+    </div>
+
+    <div class="tables">
+      <div class="tblwrap">
+        <div class="fig-h mono"><span>std::map&lt;std::string, Channel*&gt; channels</span></div>
+        <div class="tscroll">
+          <table class="ctab">
+            <thead><tr><th>Channel</th><th>Members</th><th>Modes</th><th>Topic</th><th>Key</th><th>Limit</th><th>inviteList</th></tr></thead>
+            <tbody id="irc-chans"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tblwrap">
+        <div class="fig-h mono"><span>std::map&lt;int, Client*&gt; clients</span></div>
+        <div class="tscroll">
+          <table class="ctab">
+            <thead><tr><th>fd</th><th>Nick</th><th>User</th><th title="has_pass has_nick has_user">P N U</th><th>Reg.</th><th>r_buffer</th></tr></thead>
+            <tbody id="irc-clients"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</LabLayout>
+
+<script>
+  import { mount } from "../../demos/irc/ui";
+  mount();
+</script>
+
+<style is:global>
+  .irc{--pane-h:340px;font-family:var(--mono)}
+  .irc code{font:inherit;color:var(--ink);background:var(--red-soft);padding:0 3px}
+  .irc-bar{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;border:1px solid var(--line);padding:10px 12px;background:var(--paper)}
+  .irc-bar .cmdline{font-size:13px;overflow-wrap:anywhere}
+  .irc-bar .pr{color:var(--red);margin-right:4px}
+  .irc-bar .dim{color:var(--ink-3)}
+  .irc-bar .bar-btns{display:flex}
+  .tour-cap{grid-column:1/-1;font-size:12px;color:var(--ink-2);border-top:1px dashed rgba(28,42,58,.35);padding-top:8px;min-height:2.4em}
+  .tour-cap b{color:var(--red);font-weight:600}
+  .ibtn{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 12px;cursor:pointer;border-radius:0}
+  .ibtn + .ibtn{border-left:0}
+  .ibtn.primary{background:var(--ink);color:var(--paper)}
+  .ibtn:hover:not(:disabled){background:var(--red);border-color:var(--red);color:var(--paper)}
+  .ibtn:disabled{opacity:.45;cursor:default}
+  .ibtn.sm{padding:3px 7px;font-size:10px}
+
+  .tabs{display:none}
+  .panes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);border-top:0}
+  .pane{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line);background:rgba(255,255,255,.35)}
+  .pane:last-child{border-right:0}
+  .ph{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);background:var(--paper)}
+  .ph b{color:var(--ink);font-weight:600}
+  .ph .pfd{margin-left:auto;color:var(--red)}
+  .ph .pfd.off{color:var(--ink-3)}
+  .nc-ctl{display:flex;align-items:center;gap:8px;width:100%}
+  .nc-ctl .crlf{display:flex;gap:4px;align-items:center;margin-right:auto;text-transform:none}
+  .nc-ctl .crlf input{accent-color:var(--red)}
+  .nc-ctl .ibtn + .ibtn{border-left:1px solid var(--line);margin-left:-8px}
+  .chips{display:flex;gap:0;flex-wrap:wrap;border-bottom:1px solid rgba(28,42,58,.25);min-height:25px}
+  .chips button{font:400 11px var(--mono);border:0;border-right:1px solid rgba(28,42,58,.25);background:transparent;color:var(--ink-2);padding:4px 9px;cursor:pointer}
+  .chips button[aria-pressed="true"]{color:var(--paper);background:var(--ink)}
+  .chips button.act:not([aria-pressed="true"]){color:var(--red)}
+  .scroll{height:var(--pane-h);overflow-y:auto;overflow-x:hidden;padding:8px 10px;font-size:12px;line-height:1.5}
+  .scroll:focus-visible{outline-offset:-2px}
+  .scroll .l{white-space:pre-wrap;overflow-wrap:anywhere}
+  .scroll .l.art{white-space:pre;overflow-x:auto;overflow-wrap:normal}
+  .scroll .ts{color:var(--ink-3);margin-right:6px}
+  .scroll .tg{color:var(--ink-3);margin-right:6px}
+  .scroll .dim{color:var(--ink-3)}
+  .scroll .inf{color:var(--ink-2)}
+  .scroll .err{color:var(--red)}
+  .scroll .nk{font-weight:600}
+  .scroll .me{color:var(--red);font-weight:600}
+  .scroll .tx-out{color:var(--ink-2)}
+  .scroll .eol{color:var(--ink-3);font-size:10px;margin-left:2px}
+  .scroll .raw-in{color:var(--ink)}
+  .scroll .raw-out{color:var(--red)}
+  .inp{display:flex;border-top:1px solid var(--line);background:var(--paper)}
+  .inp .pfx{font-size:12px;padding:8px 0 8px 10px;color:var(--red);white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+  .inp input{flex:1;min-width:0;font:400 13px var(--mono);border:0;background:transparent;color:var(--ink);padding:8px 10px;border-radius:0}
+  .inp input:focus{outline:none}
+  .inp:focus-within{box-shadow:inset 0 -2px 0 var(--red)}
+
+  .lower{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:0;border:1px solid var(--line);border-top:0}
+  .diag{margin:0;padding:12px 14px 14px;border-right:1px solid var(--line);min-width:0}
+  .fig-h{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-bottom:8px}
+  .diag svg{width:100%;height:auto;display:block;overflow:visible}
+  .diag svg .ev{opacity:0;transition:opacity .25s}
+  .diag svg .node.hot .ev{opacity:1}
+  .diag svg .node.hot .part,.diag svg #n-poll.hot{stroke:var(--red);fill:#fbf3ee}
+  .diag svg .node.off .part{stroke-dasharray:4 3;stroke:var(--ink-3)}
+  .diag svg .node.off text{fill:var(--ink-3)}
+  .diag svg line.hot{stroke:var(--red)}
+  .diag svg .dot{fill:var(--red)}
+  .diag svg #irc-handler{fill:var(--red)}
+  .diag figcaption{font-size:11px;color:var(--ink-3);margin-top:10px;line-height:1.5}
+  .pfds{margin-top:10px;font-size:11px}
+  .pfds-h{color:var(--ink-3);font-size:10px;letter-spacing:.06em;margin-bottom:4px}
+  .pfds-row{display:flex;flex-wrap:wrap;border-left:1px solid var(--line)}
+  .pfd-cell{border:1px solid var(--line);border-left:0;padding:4px 8px;min-width:92px;line-height:1.4}
+  .pfd-cell small{display:block;color:var(--ink-3);font-size:9.5px}
+  .pfd-cell b{font-weight:600}
+  .pfd-cell .rv{color:var(--ink-3)}
+  .pfd-cell.hot{background:var(--red-soft)}
+  .pfd-cell.hot .rv{color:var(--red);font-weight:600}
+
+  .evlog{padding:12px 14px 14px;min-width:0;display:flex;flex-direction:column}
+  .ev-list{list-style:none;flex:1;height:360px;overflow-y:auto;font-size:11px;line-height:1.55;border:1px solid rgba(28,42,58,.25);padding:6px 8px;background:rgba(255,255,255,.35)}
+  .ev-list li{white-space:pre-wrap;overflow-wrap:anywhere;padding-left:1.4em;text-indent:-1.4em}
+  .ev-list .p{color:var(--ink);font-weight:500}
+  .ev-list .p .r{color:var(--red)}
+  .ev-list .c{color:var(--ink-2)}
+  .ev-list .s{color:var(--ink-3)}
+  .ev-list .s q{color:var(--ink-2);quotes:'"' '"'}
+  .ev-list .x{color:var(--red)}
+  .ev-list .q{color:var(--ink)}
+
+  .tables{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);border:1px solid var(--line);border-top:0}
+  .tblwrap{padding:12px 14px 14px;min-width:0}
+  .tblwrap + .tblwrap{border-left:1px solid var(--line)}
+  .tscroll{overflow-x:auto}
+  .ctab{font-size:11.5px}
+  .ctab td,.ctab th{padding:6px 8px;white-space:nowrap}
+  .ctab td.wrap{white-space:normal;min-width:120px;overflow-wrap:anywhere}
+  .ctab .op{color:var(--red);font-weight:600}
+  .ctab .empty{color:var(--ink-3);font-style:italic}
+  .ctab .buf{color:var(--red)}
+
+  @media (max-width:1100px){
+    .lower{grid-template-columns:1fr}
+    .diag{border-right:0;border-bottom:1px solid var(--line)}
+    .ev-list{height:260px}
+    .tables{grid-template-columns:1fr}
+    .tblwrap + .tblwrap{border-left:0;border-top:1px solid var(--line)}
+  }
+  @media (max-width:900px){
+    .irc{--pane-h:300px}
+    .tabs{display:flex;border:1px solid var(--line);border-top:0}
+    .tab{flex:1;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;border:0;border-right:1px solid var(--line);background:var(--paper);color:var(--ink-2);padding:9px 6px;cursor:pointer;border-radius:0}
+    .tab:last-child{border-right:0}
+    .tab[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+    .tab.ping:not([aria-selected="true"])::after{content:" •";color:var(--red)}
+    .panes{grid-template-columns:1fr}
+    .pane{display:none;border-right:0}
+    .pane.on{display:flex}
+  }
+  @media (max-width:600px){
+    .irc-bar{grid-template-columns:1fr}
+    .irc-bar .bar-btns .ibtn{flex:1}
+    .inp input{font-size:16px}
+  }
+</style>

@@ -1,0 +1,115 @@
+
+services:
+
+    nginx:
+        build: ./requirements/nginx
+        image: nginx
+        ports:
+            - "443:443"
+        depends_on:
+            - wordpress
+            - adminer
+        env_file:
+            - .env
+        volumes:
+            - wp_data:/var/www/html
+        networks:
+            - inception
+        restart: always
+
+    wordpress:
+        build: ./requirements/wordpress
+        image: wordpress
+        depends_on:
+            - mariadb
+            - redis
+        env_file:
+            - .env
+        volumes:
+            - wp_data:/var/www/html
+        networks:
+            - inception
+        restart: always
+
+    mariadb:
+        build: ./requirements/mariadb
+        image: mariadb
+        env_file:
+            - .env
+        volumes:
+            - db_data:/var/lib/mysql
+        networks:
+            - inception
+        restart: always
+
+    redis:
+        build: ./requirements/bonus/redis
+        image: redis
+        networks:
+            - inception
+        restart: always
+
+    adminer:
+        build: ./requirements/bonus/adminer
+        image: adminer
+        depends_on:
+            - mariadb
+        networks:
+            - inception
+        restart: always
+
+    website:
+        build: ./requirements/bonus/website
+        image: website
+        ports:
+            - "8443:443"
+        networks:
+            - inception
+        restart: always
+
+    ftp:
+        build: ./requirements/bonus/ftp
+        image: ftp
+        ports:
+            - "21:21"
+            - "21000-21010:21000-21010"
+        env_file:
+            - .env
+        volumes:
+            - wp_data:/var/www/html
+        networks:
+            - inception
+        restart: always
+
+    cadvisor:
+        build: ./requirements/bonus/cadvisor
+        image: cadvisor
+        ports:
+            - "8090:8080"
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:ro
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+        networks:
+            - inception
+        restart: always
+        privileged: true
+
+volumes:
+    db_data:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device:  /home/sel-maaq/data/mariadb
+    wp_data:
+        driver: local
+        driver_opts:
+            type: none
+            o: bind
+            device:  /home/sel-maaq/data/wordpress
+
+networks:
+    inception:
+        driver: bridge

@@ -325,3 +325,4 @@ td.qty{color:var(--ink-3)}
 .run-btn{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border:1px solid var(--red);color:var(--red);padding:3px 8px;margin-right:auto;margin-left:12px}
 .run-btn:hover{background:var(--red);color:var(--paper)}
 @media (max-width:900px){.lab-head{grid-template-columns:1fr}.lab-meta{text-align:left}}
+.detail-foot a.run-btn::after{content:none}.detail-foot a.run-btn{color:var(--red)}.detail-foot a.run-btn:hover{color:var(--paper)}

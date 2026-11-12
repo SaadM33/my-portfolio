@@ -1,0 +1,231 @@
+---
+import LabLayout from "../../layouts/LabLayout.astro";
+---
+
+<LabLayout
+  title="Inception"
+  sheet="L2"
+  subtitle="Eight containers built from plain debian:bookworm with docker-compose: NGINX (TLS 1.2/1.3) → WordPress on php-fpm → MariaDB, plus Redis, Adminer, a static site, vsftpd and cAdvisor. Click any part of the drawing to read its real Dockerfile, config and entrypoint."
+  repo="SaadM33/inception"
+  note="Interactive visualization of the real config, not running containers. The drawing, ports, volumes, depends_on edges, file contents and every quoted config line are read from the repo's docker-compose.yml, Makefile, Dockerfiles and scripts. `make` and the request trace are replays: the order comes from depends_on and the entrypoint scripts, but build/compose output and container log lines are reconstructed (no timings, versions abbreviated). The repo's .env is git-ignored, so secrets only ever appear as ${VAR} placeholders."
+>
+  <div id="inc" class="inc">
+    <div class="inc-grid">
+      <div class="inc-left">
+        <div class="inc-figcap">
+          <span>Fig. 1 — srcs/docker-compose.yml, as drawn</span>
+          <span class="inc-hint">click a container, volume or the network</span>
+        </div>
+        <div class="inc-scroll" tabindex="-1">
+          <svg id="inc-svg" viewBox="0 0 1000 640" role="group" aria-label="Architecture drawing of the Inception docker-compose stack"></svg>
+        </div>
+        <div class="inc-list" id="inc-list" aria-label="Open a service"></div>
+
+        <div class="inc-controls">
+          <div class="inc-ctl">
+            <div class="inc-ctl-h"><span class="red">A</span> Boot sequence <small>replay</small></div>
+            <div class="inc-btns">
+              <button type="button" class="btn primary" data-make="all">make</button>
+              <button type="button" class="btn" data-make="down">make down</button>
+              <button type="button" class="btn" data-make="clean">make clean</button>
+              <button type="button" class="btn" id="inc-skip">skip ▸▸</button>
+            </div>
+            <div class="inc-status" id="inc-status" aria-live="polite"></div>
+          </div>
+          <div class="inc-ctl">
+            <div class="inc-ctl-h"><span class="red">B</span> Trace a request <small>replay</small></div>
+            <div class="inc-btns">
+              <label class="inc-sel"><span class="sr-only">Route</span>
+                <select id="inc-route">
+                  <option value="wp">GET / → WordPress</option>
+                  <option value="adminer">POST /adminer/ → Adminer</option>
+                  <option value="site">GET :8443/ → static site</option>
+                </select>
+              </label>
+              <label class="inc-chk"><input type="checkbox" id="inc-hit" /> redis warm (cache hit)</label>
+              <button type="button" class="btn primary" id="inc-go">trace ▸</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="inc-right" aria-label="Details">
+        <div class="inc-modes" id="inc-modes" role="tablist">
+          <button type="button" role="tab" data-pane="files" aria-selected="true">Files</button>
+          <button type="button" role="tab" data-pane="boot" aria-selected="false">Boot log</button>
+          <button type="button" role="tab" data-pane="trace" aria-selected="false">Trace</button>
+        </div>
+
+        <section class="inc-pane" id="inc-files" aria-live="polite">
+          <h2 class="inc-ptitle"></h2>
+          <dl class="inc-facts"></dl>
+          <div class="inc-tabs" role="tablist"></div>
+          <div class="inc-path"></div>
+          <pre class="inc-code" tabindex="0"></pre>
+          <p class="inc-extra"></p>
+        </section>
+
+        <section class="inc-pane" id="inc-boot" hidden>
+          <div class="inc-termbar"><span>replay · not a real shell</span><button type="button" id="inc-clear">clear</button></div>
+          <pre class="inc-term" id="inc-term" aria-live="off"></pre>
+          <p class="inc-legend2"><span class="cmd">↳</span> command the entrypoint runs (copied from the script; the real container doesn't echo it) · <span class="note">#</span> annotation</p>
+        </section>
+
+        <section class="inc-pane" id="inc-trace" hidden>
+          <div class="inc-req mono" id="inc-req">choose a route and press trace</div>
+          <ol class="inc-hops" id="inc-hops"></ol>
+        </section>
+      </aside>
+    </div>
+  </div>
+</LabLayout>
+
+<script>
+  import { init } from "../../demos/inception/main";
+  init();
+</script>
+
+<style is:global>
+  .inc { --pane-h: 640px; }
+  .inc button { font: inherit; color: inherit; cursor: pointer; }
+  .inc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 0; border: 1px solid var(--line); }
+  .inc-left { min-width: 0; border-right: 1px solid var(--line); }
+  .inc-figcap { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); flex-wrap: wrap; }
+  .inc-hint { color: var(--red); text-transform: none; letter-spacing: 0; font-style: italic; }
+  .inc-scroll { overflow-x: auto; padding: 8px 6px 0; }
+  #inc-svg { display: block; width: 100%; min-width: 720px; height: auto; }
+  #inc-svg text.inc-tiny { font-size: 6.8px; }
+  #inc-svg .inc-node, #inc-svg .inc-vol, #inc-svg .inc-net { cursor: pointer; outline: none; }
+  #inc-svg .inc-hd { fill: var(--paper-2); stroke: var(--ink); stroke-width: .8; }
+  #inc-svg .inc-hdt { font-size: 7.2px; letter-spacing: .04em; }
+  #inc-svg .inc-nm { font-size: 17px; }
+  #inc-svg .inc-led { fill: var(--paper); stroke: var(--ink-3); stroke-width: .9; transition: fill .3s, stroke .3s; }
+  #inc-svg .inc-node[data-st="off"] .inc-box { stroke-dasharray: 4 3; stroke: var(--ink-3); }
+  #inc-svg .inc-node[data-st="off"] .inc-nm { fill: var(--ink-2); }
+  #inc-svg .inc-node[data-st="built"] .inc-box { stroke-dasharray: 4 3; }
+  #inc-svg .inc-node[data-st="built"] .inc-led { stroke: var(--ink); }
+  #inc-svg .inc-node[data-st="created"] .inc-led { fill: var(--ink-3); stroke: var(--ink); }
+  #inc-svg .inc-node[data-st="started"] .inc-led { fill: var(--ink); stroke: var(--ink); }
+  #inc-svg .inc-node[data-st="ready"] .inc-led { fill: var(--red); stroke: var(--red); }
+  #inc-svg .inc-node[data-st="ready"] .inc-box { stroke-width: 1.6; }
+  #inc-svg .inc-node:hover .inc-box, #inc-svg .inc-node:focus-visible .inc-box,
+  #inc-svg .inc-vol:hover .part, #inc-svg .inc-vol:focus-visible .part { stroke: var(--red); fill: #fbf3ee; }
+  #inc-svg .inc-node.sel .inc-box { stroke: var(--red); stroke-width: 2; stroke-dasharray: none; }
+  #inc-svg .inc-node.sel .inc-hd { fill: var(--red); stroke: var(--red); }
+  #inc-svg .inc-node.sel .inc-hdt { fill: var(--paper); }
+  #inc-svg .inc-node.hot .inc-box { fill: #fbf3ee; stroke: var(--red); stroke-width: 2; stroke-dasharray: none; }
+  #inc-svg .inc-net:hover .inc-netbox, #inc-svg .inc-net:focus-visible .inc-netbox { stroke: var(--red); }
+  #inc-svg .inc-nettab { fill: var(--ink); }
+  #inc-svg text.inc-nettxt { fill: var(--paper); font-size: 7.6px; letter-spacing: .04em; }
+  #inc-svg .inc-net:hover .inc-nettab, #inc-svg .inc-net:focus-visible .inc-nettab { fill: var(--red); }
+  #inc-svg .inc-netbox { stroke-width: 1.1; }
+  #inc-svg .inc-tab { fill: var(--red); }
+  #inc-svg text.inc-pl { fill: var(--red); font-weight: 500; }
+  #inc-svg text.inc-dep { font-size: 6.6px; fill: var(--ink-3); }
+  #inc-svg .inc-edge { transition: stroke .3s, stroke-width .3s; }
+  #inc-svg .inc-edge.lit { stroke: var(--red); stroke-width: 1.8; }
+  #inc-svg .inc-dotc { fill: var(--red); stroke: var(--paper); stroke-width: 2; }
+  #inc-svg text.inc-dotl { font-size: 9px; font-weight: 600; font-style: normal; paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
+  #inc-svg .inc-mount { stroke: var(--ink-2); }
+  #inc-svg .inc-host .part { fill: var(--paper-2); }
+
+  .inc-list { display: none; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-top: 1px dashed rgba(28,42,58,.35); }
+  .inc-chip { font: 500 11px var(--mono) !important; border: 1px solid var(--line); background: var(--paper); padding: 3px 8px; }
+  .inc-chip:hover, .inc-chip:focus-visible { border-color: var(--red); color: var(--red) !important; }
+
+  .inc-controls { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+  .inc-ctl { padding: 14px 14px 16px; min-width: 0; }
+  .inc-ctl + .inc-ctl { border-left: 1px solid var(--line); }
+  .inc-ctl-h { font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+  .inc-ctl-h .red { margin-right: 8px; }
+  .inc-ctl-h small { font: italic 400 10.5px var(--mono); color: var(--red); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+  .inc-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .inc-btns .btn { padding: 8px 12px; font-size: 11px; }
+  .inc-btns .btn + .btn { border-left: 1px solid var(--line); }
+  .inc .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .inc .btn:disabled:hover { background: var(--paper); color: var(--ink); border-color: var(--line); }
+  .inc .btn.primary:disabled:hover { background: var(--ink); color: var(--paper); }
+  .inc-status { font: 400 11px var(--mono); color: var(--ink-2); margin-top: 10px; }
+  .inc-status b { color: var(--red); font-weight: 500; }
+  .inc-sel select { font: 500 11.5px var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 0; padding: 7px 8px; max-width: 100%; }
+  .inc-chk { font: 400 11.5px var(--mono); color: var(--ink-2); display: inline-flex; gap: 6px; align-items: center; }
+  .inc-chk input { accent-color: var(--red); }
+
+  .inc-right { min-width: 0; display: flex; flex-direction: column; background: rgba(242,240,232,.7); }
+  .inc-modes { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
+  .inc-modes button { background: none; border: 0; border-right: 1px solid var(--line); padding: 9px 6px; font: 500 11px var(--mono) !important; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2) !important; }
+  .inc-modes button:last-child { border-right: 0; }
+  .inc-modes button[aria-selected="true"] { background: var(--ink); color: var(--paper) !important; }
+  .inc-pane { padding: 14px 14px 16px; display: flex; flex-direction: column; min-height: 0; height: var(--pane-h); }
+  .inc-pane[hidden] { display: none; }
+  .inc-ptitle { font: 600 24px/1.1 var(--cond); text-transform: uppercase; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .inc-ptitle .red { font: 600 12px var(--mono); }
+  .inc-ptitle small { font: 400 11px var(--mono); color: var(--ink-3); text-transform: none; }
+  .inc-facts { margin: 12px 0; border: 1px solid var(--line); font: 400 11.5px/1.45 var(--mono); max-height: 230px; overflow-y: auto; flex: none; }
+  .inc-facts > div { display: grid; grid-template-columns: 92px 1fr; border-bottom: 1px solid rgba(28,42,58,.2); }
+  .inc-facts > div:last-child { border-bottom: 0; }
+  .inc-facts dt { color: var(--ink-3); text-transform: uppercase; font-size: 9.5px; letter-spacing: .06em; padding: 6px 8px; border-right: 1px solid rgba(28,42,58,.2); }
+  .inc-facts dd { padding: 5px 8px; overflow-wrap: anywhere; min-width: 0; }
+  .inc code { font-family: var(--mono); font-size: .95em; background: rgba(28,42,58,.06); padding: 0 3px; }
+  .inc-ref { font: 500 10px var(--mono) !important; color: var(--red) !important; background: none; border: 0; border-bottom: 1px dotted var(--red); padding: 0; margin-left: 4px; }
+  .inc-ref:hover { background: var(--red-soft); }
+  .inc-tabs { display: flex; flex-wrap: wrap; border-left: 1px solid var(--line); border-top: 1px solid var(--line); flex: none; }
+  .inc-tabs button { background: var(--paper); border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 5px 9px; font: 500 10.5px var(--mono) !important; }
+  .inc-tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper) !important; }
+  .inc-path { font: 400 10px var(--mono); color: var(--ink-3); padding: 6px 0 4px; overflow-wrap: anywhere; flex: none; }
+  .inc-code { flex: 1; min-height: 160px; overflow: auto; border: 1px solid var(--line); background: #fbfaf5; font: 400 11.5px/1.55 var(--mono); padding: 6px 0; counter-reset: none; tab-size: 4; }
+  .inc-code .cl { display: block; padding: 0 10px 0 0; white-space: pre; }
+  .inc-code .cl::before { content: attr(data-n); display: inline-block; width: 34px; padding-right: 8px; margin-right: 8px; text-align: right; color: var(--ink-3); border-right: 1px solid rgba(28,42,58,.15); user-select: none; }
+  .inc-code .cl.mk { background: var(--red-soft); box-shadow: inset 3px 0 0 var(--red); }
+  .inc-code .t-com { color: var(--ink-3); font-style: italic; }
+  .inc-code .t-kw { color: var(--ink); font-weight: 600; }
+  .inc-code .t-str { color: #3c6e5a; }
+  .inc-code .t-var { color: var(--red); }
+  .inc-code .t-flag { color: #3f5f88; }
+  .inc-extra { font: italic 400 11px var(--mono); color: var(--ink-3); margin-top: 6px; }
+  .inc-extra:empty { display: none; }
+
+  .inc-termbar { display: flex; justify-content: space-between; align-items: center; background: var(--ink); color: var(--ink-3); font: 500 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; }
+  .inc-termbar button { background: none; border: 1px solid var(--ink-2); color: var(--paper) !important; font: 500 10px var(--mono) !important; padding: 1px 6px; }
+  .inc-term { flex: 1; min-height: 200px; overflow: auto; background: #18232f; color: #d9d6cb; font: 400 11px/1.55 var(--mono); padding: 8px 10px; }
+  .inc-term .tl { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .inc-term .prompt { color: #fff; font-weight: 600; margin-top: 6px; }
+  .inc-term .prompt.sub { color: #b8c4d1; }
+  .inc-term .dim { color: #8d99a6; }
+  .inc-term .ok { color: #a9cfa0; }
+  .inc-term .cmd { color: #f08a7e; }
+  .inc-term .note { color: #e7b76a; font-style: italic; }
+  .inc-legend2 { font: 400 10.5px var(--mono); color: var(--ink-2); margin-top: 8px; }
+  .inc-legend2 .cmd { color: var(--red); font-weight: 600; }
+  .inc-legend2 .note { color: var(--red); }
+
+  .inc-req { font-size: 12px; border: 1px solid var(--line); padding: 7px 10px; background: var(--paper); margin-bottom: 10px; overflow-wrap: anywhere; flex: none; }
+  .inc-hops { list-style: none; overflow-y: auto; flex: 1; display: grid; align-content: start; gap: 8px; padding-right: 2px; }
+  .inc-hops li { border: 1px solid rgba(28,42,58,.35); padding: 8px 10px; background: var(--paper); font-size: 15px; }
+  .inc-hops li.cur { border-color: var(--red); box-shadow: inset 3px 0 0 var(--red); }
+  .inc-hops li.end { border-style: dashed; font: 400 11px var(--mono); color: var(--ink-3); }
+  .hop-t { font: 600 12.5px var(--mono); }
+  .hop-t b { color: var(--red); margin-right: 6px; }
+  .inc-hops p { margin: 4px 0 0; line-height: 1.4; color: var(--ink); }
+  .hop-refs { margin-top: 6px; display: grid; gap: 3px; }
+  .hop-refs > div { font: 400 10.5px var(--mono); display: flex; gap: 6px; align-items: baseline; min-width: 0; }
+  .hop-refs .inc-ref { margin-left: 0; flex: none; }
+  .hop-refs code { overflow-wrap: anywhere; min-width: 0; }
+
+  @media (max-width: 1100px) {
+    .inc-grid { grid-template-columns: 1fr; }
+    .inc-left { border-right: 0; border-bottom: 1px solid var(--line); }
+    .inc { --pane-h: 560px; }
+  }
+  @media (max-width: 700px) {
+    .inc-list { display: flex; }
+    .inc-controls { grid-template-columns: 1fr; }
+    .inc-ctl + .inc-ctl { border-left: 0; border-top: 1px solid var(--line); }
+    .inc-facts > div { grid-template-columns: 78px 1fr; }
+    .inc-code { font-size: 10.5px; }
+    .inc-pane { padding: 12px 10px 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #inc-svg .inc-led, #inc-svg .inc-edge { transition: none; }
+  }
+</style>

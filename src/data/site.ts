@@ -63,6 +63,7 @@ export type Detail = {
   description: string;
   material: string;
   repo?: string; // "owner/name"
+  lab?: string; // path to the runnable demo, e.g. "/lab/irc"
 };
 
 /** The 4 projects drawn as diagrams. */
@@ -77,6 +78,7 @@ export const details: Detail[] = [
       "An IRC server that real clients connect to, built around a single non-blocking poll() loop with buffered partial reads. Implements 13 commands — including KICK, INVITE, TOPIC and MODE with +i +t +k +o +l. Team of three; I'm the top committer.",
     material: "MAT: C++98 · sockets · poll(2)",
     repo: "SaadM33/Internet-Relay-Chat",
+    lab: "/lab/irc",
   },
   {
     id: "B",
@@ -88,6 +90,7 @@ export const details: Detail[] = [
       "Eight services, each built from a plain Debian image with my own Dockerfiles: NGINX terminating TLS 1.2/1.3 in front of WordPress on php-fpm (set up with WP-CLI) and MariaDB, plus Redis, Adminer, FTP, a static site and cAdvisor. Ships with user and developer guides.",
     material: "MAT: Docker · Compose · NGINX · MariaDB",
     repo: "SaadM33/inception",
+    lab: "/lab/inception",
   },
   {
     id: "C",
@@ -99,6 +102,7 @@ export const details: Detail[] = [
       "A Wolfenstein-style first-person renderer in C using DDA raycasting. My part: the .cub map parser, smooth key-state movement, the minimap, mouse look, and doors that open — which the rays have to treat as a special case.",
     material: "MAT: C · MiniLibX · DDA",
     repo: "authyx/cub3d",
+    lab: "/lab/cub3d",
   },
   {
     id: "D",
@@ -110,6 +114,7 @@ export const details: Detail[] = [
       "A shell in C with a hand-written lexer and parser, quote-aware $VAR and $? expansion, pipes, < > >> redirections and heredocs, seven builtins and correct Ctrl-C handling. Leak-checked under valgrind.",
     material: "MAT: C · readline · fork(2) · pipe(2)",
     repo: "SaadM33/minishell",
+    lab: "/lab/minishell",
   },
 ];
 
