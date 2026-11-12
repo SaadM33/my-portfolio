@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>saad@1337: ~</title>
+<meta name="description" content="Saad M. — systems programming student at 1337 (42 Network). C, C++, networking, Docker, web.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12110e;
+    --bg-2:#1a1814;
+    --fg:#d8d1c1;
+    --fg-hi:#f1ead9;
+    --dim:#857e70;
+    --faint:#3b3830;
+    --rule:#2a2822;
+    --amber:#e8a849;
+    --amber-dim:#9c7234;
+    --sel:#e8a849;
+    --ch: 1ch;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:24px}
+  body{
+    margin:0;background:var(--bg);color:var(--fg);
+    font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:15px;line-height:1.6;
+    font-feature-settings:"calt" 0, "liga" 0;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:44px;
+  }
+  ::selection{background:var(--sel);color:var(--bg)}
+  a{color:inherit;text-decoration:underline;text-decoration-color:var(--amber-dim);text-underline-offset:3px}
+  a:hover{color:var(--amber);text-decoration-color:var(--amber)}
+  a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:1px dashed var(--amber);outline-offset:2px}
+  b,strong{color:var(--fg-hi);font-weight:700}
+  .dim{color:var(--dim)}
+  .faint{color:var(--faint)}
+  .amb{color:var(--amber)}
+  .hi{color:var(--fg-hi)}
+
+  .wrap{max-width:112ch;margin:0 auto 0 max(16px, calc((100vw - 112ch)/2 - 6ch));padding:0 24px}
+  @media (max-width:1100px){.wrap{margin:0 auto}}
+
+  /* man header */
+  .manhead{display:flex;justify-content:space-between;gap:2ch;padding:22px 0 0;color:var(--dim);font-size:13px;letter-spacing:.02em}
+  .manhead span:nth-child(2){text-align:center}
+
+  section{padding:56px 0 8px}
+  .ps1{color:var(--dim);white-space:pre-wrap;word-break:break-word}
+  .ps1 .u{color:var(--amber)}
+  .ps1 .path{color:var(--fg)}
+  .ps1 .cmd{color:var(--fg-hi)}
+  .ps1 .cmd .arg{color:var(--fg)}
+  .out{margin:6px 0 0}
+
+  /* hero */
+  .hero{padding-top:64px}
+  .name{
+    font-weight:800;font-size:clamp(44px,8.2vw,112px);line-height:.92;letter-spacing:-.045em;
+    color:var(--fg-hi);margin:14px 0 6px;
+  }
+  .name .cur{display:inline-block;width:.52em;height:.82em;background:var(--amber);vertical-align:-.04em;margin-left:.08em;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .role{color:var(--fg);margin:14px 0 0;max-width:62ch}
+  .role b{color:var(--amber);font-weight:500}
+  .meta{display:grid;grid-template-columns:max-content 1fr;column-gap:3ch;margin:26px 0 0;color:var(--fg)}
+  .meta dt{color:var(--dim)}
+  .meta dd{margin:0}
+
+  .about p{max-width:68ch;margin:10px 0 0}
+  .about p:first-of-type{margin-top:6px}
+  .env{margin:22px 0 0;display:grid;grid-template-columns:max-content 1fr;column-gap:0;row-gap:2px}
+  .env .k{color:var(--amber)}
+  .env .v{color:var(--fg)}
+  .env .v::before{content:"=";color:var(--dim)}
+  .env .v q{quotes:'"' '"';color:var(--fg)}
+  .env .v q::before,.env .v q::after{color:var(--dim)}
+
+  /* ls -la */
+  .ls{margin:8px 0 0;width:100%;border-collapse:collapse;font-size:inherit}
+  .ls td{padding:0 2ch 0 0;white-space:nowrap;vertical-align:top}
+  .ls td:last-child{padding-right:0;white-space:normal}
+  .ls .perm{color:var(--dim)}
+  .ls .n,.ls .own{color:var(--dim)}
+  .ls .sz{text-align:right;color:var(--fg)}
+  .ls .dt{color:var(--dim)}
+  .ls .nm a{color:var(--amber);text-decoration:none;font-weight:500}
+  .ls .nm a:hover{text-decoration:underline}
+  .ls .nm .note{color:var(--dim);font-style:italic}
+  .ls tr.dot td{color:var(--faint)}
+  .ls tr.dot .nm{color:var(--dim)}
+  .ls tbody tr:not(.dot):hover td{background:var(--bg-2)}
+  .total{color:var(--dim)}
+
+  /* man pages */
+  .man{margin:40px 0 0;border-top:1px solid var(--rule);padding-top:18px}
+  .man:target{border-top-color:var(--amber)}
+  .man-top{display:flex;justify-content:space-between;color:var(--dim);font-size:13px;gap:2ch}
+  .man-top b{color:var(--fg)}
+  .sec{display:grid;grid-template-columns:14ch 1fr;gap:0 1ch;margin-top:14px}
+  .sec h4{margin:0;font-size:inherit;font-weight:700;color:var(--fg-hi);letter-spacing:.02em}
+  .sec .body{max-width:70ch;min-width:0}
+  .diag-m{display:none}
+  .sec .body p{margin:0}
+  .sec .body p + p{margin-top:8px}
+  .syn{color:var(--fg-hi)}
+  .syn i{font-style:normal;color:var(--amber);text-decoration:underline;text-decoration-color:var(--amber-dim);text-underline-offset:3px}
+  .opts{display:grid;grid-template-columns:max-content 1fr;gap:2px 2ch;margin:6px 0 0}
+  .opts dt{color:var(--fg-hi)}
+  .opts dd{margin:0}
+  .man.short .sec{margin-top:10px}
+  .bugs{color:var(--dim)}
+  .tagline{color:var(--dim)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 5ch}
+  .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) 36ch;gap:0 7ch;align-items:end}
+  .idx{border-left:1px solid var(--rule);padding:0 0 4px 3ch;margin-bottom:4px}
+  .idx ol{list-style:none;margin:10px 0 0;padding:0;counter-reset:i}
+  .idx li{display:grid;grid-template-columns:3ch 1fr;padding:3px 0;border-bottom:1px dotted var(--rule);counter-increment:i}
+  .idx li::before{content:counter(i);color:var(--faint);grid-row:span 2}
+  .idx li a{color:var(--amber);text-decoration:none;font-weight:500}
+  .idx li a:hover{text-decoration:underline}
+  .idx li span{color:var(--dim);font-size:13px;line-height:1.4}
+  .idx-foot{margin:12px 0 0;font-size:13px}
+  @media (max-width:980px){.hero-grid{grid-template-columns:1fr}.idx{border-left:0;padding-left:0;margin-top:36px}}
+  .short .sec{grid-template-columns:1fr}
+  .short .sec h4{color:var(--dim);font-weight:500;font-size:12px;letter-spacing:.08em}
+  .short .sec .body{padding-left:0}
+  .short .man-top{font-size:12px}
+  .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 4ch}
+  @media (max-width:980px){.grid3{grid-template-columns:1fr}}
+  .detail li{padding-left:2ch;text-indent:-2ch}
+  .name{white-space:nowrap}
+
+
+  /* git log */
+  .log{margin:8px 0 0}
+  .commit{display:grid;grid-template-columns:3ch 8ch 1fr;column-gap:1ch}
+  .g{color:var(--amber);white-space:pre}
+  .hash{color:var(--amber-dim)}
+  .ref{color:var(--fg-hi)}
+  .ref .h{color:var(--amber);font-weight:700}
+  .msg{color:var(--fg)}
+  .msg .when{color:var(--dim)}
+  .detail{color:var(--dim);margin:0;padding:2px 0 12px}
+  .g-line{color:transparent;background:linear-gradient(var(--amber-dim),var(--amber-dim)) no-repeat .5ch 0/1px 100%}
+  .detail li{list-style:none}
+  .detail ul{margin:0;padding:0}
+  .detail li::before{content:"- ";color:var(--faint)}
+
+  /* mail */
+  .mail{margin:10px 0 0;max-width:72ch}
+  .mrow{display:grid;grid-template-columns:9ch 1fr;align-items:baseline}
+  .mrow label{color:var(--dim)}
+  .mail input,.mail textarea{
+    font:inherit;color:var(--fg-hi);background:transparent;border:0;border-bottom:1px dashed var(--faint);
+    padding:2px 0;width:100%;caret-color:var(--amber);resize:vertical;
+  }
+  .mail input:focus,.mail textarea:focus{outline:none;border-bottom-color:var(--amber)}
+  .mail textarea{min-height:7.5em;margin-top:10px;border:1px dashed var(--faint);padding:8px 1ch;line-height:1.6}
+  .mail textarea:focus{border-color:var(--amber)}
+  .mail .actions{display:flex;flex-wrap:wrap;gap:1ch 3ch;align-items:center;margin-top:12px;color:var(--dim)}
+  .btn{font:inherit;background:var(--amber);color:var(--bg);border:0;padding:3px 1.5ch;cursor:pointer;font-weight:700}
+  .btn:hover{background:var(--fg-hi)}
+  .kbd{border:1px solid var(--faint);padding:0 .6ch;color:var(--fg)}
+  .links{margin:26px 0 0;display:grid;grid-template-columns:max-content 1fr;gap:2px 3ch}
+  .links span{color:var(--dim)}
+
+  /* live shell */
+  .shell{margin:64px 0 0;border-top:1px solid var(--rule);padding-top:18px}
+  .shell .hint{color:var(--dim);margin:0 0 10px}
+  #term-out{white-space:pre-wrap;word-break:break-word}
+  #term-out .err{color:var(--amber)}
+  .line{display:flex;align-items:baseline;flex-wrap:nowrap}
+  .line .ps1{flex:none;white-space:pre}
+  #term-in{
+    flex:1;min-width:0;font:inherit;color:var(--fg-hi);background:transparent;border:0;outline:none;
+    caret-color:var(--amber);padding:0;margin:0;
+  }
+  .shell .line:focus-within .ps1 .u{text-decoration:underline}
+
+  .manfoot{display:flex;justify-content:space-between;gap:2ch;color:var(--dim);font-size:13px;margin:72px 0 0;padding:14px 0 28px;border-top:1px solid var(--rule)}
+
+  /* tmux status bar */
+  .tmux{
+    position:fixed;left:0;right:0;bottom:0;z-index:5;height:26px;
+    display:flex;align-items:center;gap:0;font-size:13px;line-height:26px;
+    background:var(--amber);color:var(--bg);white-space:nowrap;overflow:hidden;
+  }
+  .tmux .sess{padding:0 1.5ch;background:var(--bg);color:var(--amber);font-weight:700;border-right:1px solid var(--amber)}
+  .tmux nav{display:flex;flex:1;min-width:0;overflow:hidden}
+  .tmux a{color:var(--bg);text-decoration:none;padding:0 1.2ch}
+  .tmux a:hover{background:rgba(0,0,0,.12)}
+  .tmux a.on{background:var(--bg);color:var(--fg-hi)}
+  .tmux a.on::after{content:"*";color:var(--amber)}
+  .tmux .right{padding:0 1.5ch;flex:none}
+
+  /* typing reveal */
+  .js .typing .cmd{visibility:hidden}
+  .js .typing .reveal{visibility:hidden}
+  .typed .cmd,.typed .reveal{visibility:visible!important}
+  .tcur{display:inline-block;width:.6em;height:1.1em;background:var(--amber);vertical-align:-.2em;animation:blink 1.1s steps(1) infinite}
+
+  @media (max-width:820px){
+    .grid2{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    body{font-size:13.5px}
+    .wrap{padding:0 16px}
+    .manhead{font-size:11px}
+    .manhead span:nth-child(2){display:none}
+    section{padding-top:44px}
+    .hero{padding-top:40px}
+    .sec{grid-template-columns:1fr}
+    .sec .body{padding-left:3ch;margin-top:2px}
+    .short .sec .body{padding-left:0}
+    .ls .perm,.ls .n,.ls .own,.ls .dt .y{display:none}
+    .ls td{padding-right:1.4ch}
+    .ls .nm .note{display:block}
+    .meta{column-gap:2ch}
+    .commit{grid-template-columns:2.5ch 1fr}
+    .commit .hash{display:none}
+    .detail{padding-left:0}
+    .opts{grid-template-columns:1fr;gap:0}
+    .opts dd{padding-left:3ch;margin-bottom:4px}
+    .tmux .right{display:none}
+    .tmux a{padding:0 .9ch}
+    .tmux .sess{display:none}
+    .diag-d{display:none}
+    .diag-m{display:block!important}
+    .manfoot{font-size:11px}
+    .links{column-gap:2ch}
+    .mrow{grid-template-columns:9.5ch 1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .name .cur,.tcur{animation:none}
+  }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+
+<div class="wrap">
+  <header class="manhead" aria-hidden="true">
+    <span>SAAD(1)</span><span>1337 Coding School — User Commands</span><span>SAAD(1)</span>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero typing" id="top" aria-label="Introduction">
+   <div class="hero-grid">
+   <div>
+    <div class="ps1"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="cmd" data-type="whoami">whoami</span></div>
+    <h1 class="name reveal">Saad M.<span class="cur" aria-hidden="true"></span></h1>
+    <p class="role reveal">Software engineering student at <b>1337</b> (42 Network, Morocco). I write
+      <b>C and C++</b> close to the kernel — shells, servers, raycasters — and ship the
+      containers and web front-ends that sit on top of them.</p>
+    <dl class="meta reveal">
+      <dt>uid</dt><dd>1337(saad) groups=c,cpp,docker,web</dd>
+      <dt>shell</dt><dd>/usr/local/bin/minishell <span class="dim">— wrote it myself</span></dd>
+      <dt>status</dt><dd><span class="amb">●</span> open to systems/backend internships, 2027</dd>
+    </dl>
+   </div>
+   <aside class="idx reveal" aria-label="Quick index">
+    <div class="ps1"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="hi">ls -t projects/</span></div>
+    <ol>
+      <li><a href="#url-shortener">url-shortener</a><span>web service · 2026</span></li>
+      <li><a href="#hackspace">HackSpace</a><span>team build · 2026</span></li>
+      <li><a href="#ft_irc">ft_irc</a><span>C++98 · poll() · sockets</span></li>
+      <li><a href="#inception">inception</a><span>docker · nginx · tls</span></li>
+      <li><a href="#cub3d">cub3d</a><span>C · raycasting</span></li>
+      <li><a href="#minishell">minishell</a><span>C · fork/pipe/dup2</span></li>
+      <li><a href="#airbnb">AirBnB_clone</a><span>python · flask · alx</span></li>
+    </ol>
+    <p class="dim idx-foot">7 entries — <a href="#projects">read the manuals ↓</a></p>
+   </aside>
+   </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about" aria-labelledby="about-h">
+    <div class="ps1"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="cmd">cat <span class="arg">about.txt</span></span></div>
+    <h2 id="about-h" class="sr" style="position:absolute;left:-9999px">About</h2>
+    <div class="out">
+      <p>I started with the ALX Software Engineering program in 2023, building a Python/Flask
+        AirBnB clone and learning that “it works on my machine” is a bug report, not an answer.</p>
+      <p>Since 2025 I've been at 1337, the 42 school in Morocco: no teachers, no lectures, peer
+        review, and a norm that rejects any function over 25 lines. It taught me to read man pages
+        before Stack Overflow, to run <span class="hi">valgrind</span> before celebrating, and that
+        the interesting bugs live between <span class="hi">fork()</span> and <span class="hi">waitpid()</span>.</p>
+      <p>Lately I'm moving up the stack — networked services, Docker infrastructure and small web
+        products — without losing the habit of knowing what every byte is doing.</p>
+    </div>
+    <div class="ps1" style="margin-top:28px"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="cmd">env <span class="arg">| grep ^STACK_</span></span></div>
+    <div class="env out">
+      <span class="k">STACK_SYSTEMS</span><span class="v"><q>C, C++98, POSIX, Makefiles, gdb, valgrind</q></span>
+      <span class="k">STACK_NET</span><span class="v"><q>sockets, poll(), TCP/IP, IRC (RFC 1459), NGINX, TLS</q></span>
+      <span class="k">STACK_OPS</span><span class="v"><q>Docker, Compose, Linux, bash, git</q></span>
+      <span class="k">STACK_WEB</span><span class="v"><q>JavaScript, React, Python, Flask, MySQL</q></span>
+      <span class="k">STACK_LEARNING</span><span class="v"><q>Go, Kubernetes</q></span>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" aria-labelledby="proj-h">
+    <h2 id="proj-h" style="position:absolute;left:-9999px">Projects</h2>
+    <div class="ps1"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="cmd">ls <span class="arg">-la projects/</span></span></div>
+    <div class="out">
+      <div class="total">total 7</div>
+      <table class="ls" role="presentation">
+        <tbody>
+          <tr class="dot"><td class="perm">drwxr-xr-x</td><td class="n">9</td><td class="own">saad 42</td><td class="sz">4096</td><td class="dt">Nov 12 <span class="y">2026</span></td><td class="nm">.</td></tr>
+          <tr class="dot"><td class="perm">drwxr-x---</td><td class="n">24</td><td class="own">saad 42</td><td class="sz">4096</td><td class="dt">Sep 30 <span class="y">2025</span></td><td class="nm">..</td></tr>
+          <tr><td class="perm">drwxr-xr-x</td><td class="n">5</td><td class="own">saad 42</td><td class="sz">18K</td><td class="dt">Oct 02 <span class="y">2026</span></td><td class="nm"><a href="#url-shortener">url-shortener/</a> <span class="note">new — short links, web service</span></td></tr>
+          <tr><td class="perm">drwxrwxr-x</td><td class="n">8</td><td class="own">team 42</td><td class="sz">64K</td><td class="dt">Aug 19 <span class="y">2026</span></td><td class="nm"><a href="#hackspace">HackSpace/</a> <span class="note">team project</span></td></tr>
+          <tr><td class="perm">drwxr-xr-x</td><td class="n">6</td><td class="own">saad 42</td><td class="sz">41K</td><td class="dt">Jun 07 <span class="y">2026</span></td><td class="nm"><a href="#ft_irc">ft_irc/</a> <span class="note">IRC server, C++98</span></td></tr>
+          <tr><td class="perm">drwxr-xr-x</td><td class="n">4</td><td class="own">saad 42</td><td class="sz">12K</td><td class="dt">Apr 21 <span class="y">2026</span></td><td class="nm"><a href="#inception">inception/</a> <span class="note">docker infra</span></td></tr>
+          <tr><td class="perm">drwxr-xr-x</td><td class="n">7</td><td class="own">saad 42</td><td class="sz">2.1M</td><td class="dt">Feb 14 <span class="y">2026</span></td><td class="nm"><a href="#cub3d">cub3d/</a> <span class="note">raycaster, C</span></td></tr>
+          <tr><td class="perm">-rwxr-xr-x</td><td class="n">1</td><td class="own">saad 42</td><td class="sz">88K</td><td class="dt">Dec 03 <span class="y">2025</span></td><td class="nm"><a href="#minishell">minishell*</a> <span class="note">bash-like shell, C</span></td></tr>
+          <tr><td class="perm">drwxr-xr-x</td><td class="n">9</td><td class="own">saad alx</td><td class="sz">230K</td><td class="dt">Mar 28 <span class="y">2024</span></td><td class="nm"><a href="#airbnb">AirBnB_clone/</a> <span class="note">Python, Flask, MySQL</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ps1" style="margin-top:36px"><span class="u">saad@1337</span>:<span class="path">~/projects</span>$ <span class="cmd">man <span class="arg">ft_irc inception cub3d minishell</span></span></div>
+
+    <!-- ft_irc -->
+    <article class="man" id="ft_irc">
+      <div class="man-top"><b>FT_IRC(8)</b><span>System Manager's Manual</span><b>FT_IRC(8)</b></div>
+      <div class="sec"><h4>NAME</h4><div class="body"><p><b>ircserv</b> — a non-blocking IRC server written in C++98</p></div></div>
+      <div class="sec"><h4>SYNOPSIS</h4><div class="body"><p class="syn">./ircserv <i>port</i> <i>password</i></p></div></div>
+      <div class="sec"><h4>DESCRIPTION</h4><div class="body">
+        <p>A single-process, single-threaded server that multiplexes every client socket through
+          one <b>poll()</b> loop — no forks, no threads, no blocking reads. Partial messages are
+          buffered per client until a full <span class="hi">\r\n</span> line arrives, so it survives
+          <span class="hi">nc</span> sending one byte at a time.</p>
+        <p>Implements authentication, nicknames, channels and operator privileges, and was tested
+          against <b>irssi</b> as the reference client.</p>
+        <dl class="opts">
+          <dt>PASS NICK USER</dt><dd>registration handshake</dd>
+          <dt>JOIN PART PRIVMSG</dt><dd>channels and direct messages</dd>
+          <dt>KICK INVITE TOPIC</dt><dd>operator commands</dd>
+          <dt>MODE +i +t +k +o +l</dt><dd>invite-only, topic lock, key, op, user limit</dd>
+        </dl>
+      </div></div>
+      <div class="sec"><h4>SEE ALSO</h4><div class="body"><p><a href="https://github.com/SaadM33/Internet-Relay-Chat">github.com/SaadM33/Internet-Relay-Chat</a>, poll(2), RFC 1459</p></div></div>
+    </article>
+
+    <!-- inception -->
+    <article class="man" id="inception">
+      <div class="man-top"><b>INCEPTION(5)</b><span>File Formats Manual</span><b>INCEPTION(5)</b></div>
+      <div class="sec"><h4>NAME</h4><div class="body"><p><b>inception</b> — a small production-style stack, one service per container</p></div></div>
+      <div class="sec"><h4>SYNOPSIS</h4><div class="body"><p class="syn">make up &nbsp;<span class="dim">#</span> docker compose -f srcs/docker-compose.yml up --build</p></div></div>
+      <div class="sec"><h4>DESCRIPTION</h4><div class="body">
+        <p>Three hand-written Dockerfiles on Debian — no pulled images. <b>NGINX</b> is the only
+          entrypoint, on 443 with TLSv1.2/1.3; it proxies to <b>WordPress + php-fpm</b>, which talks to
+          <b>MariaDB</b> over a private bridge network. Database and site files persist in named volumes,
+          and every container restarts on crash.</p>
+        <pre class="dim diag-d" style="margin:10px 0 0;font:inherit;line-height:1.45;white-space:pre;overflow:hidden">  :443 ──▶ nginx ──▶ wordpress:9000 ──▶ mariadb:3306
+             │              │                    │
+          [certs]       [wp-data]            [db-data]</pre>
+        <pre class="dim diag-m" style="margin:10px 0 0;font:inherit;line-height:1.45;white-space:pre">:443
+ └▶ nginx ········ [certs]
+     └▶ wordpress:9000 ·· [wp-data]
+         └▶ mariadb:3306 · [db-data]</pre>
+      </div></div>
+      <div class="sec"><h4>SEE ALSO</h4><div class="body"><p><a href="https://github.com/SaadM33/inception">github.com/SaadM33/inception</a>, docker-compose(1), nginx(8)</p></div></div>
+    </article>
+
+    <!-- cub3d -->
+    <article class="man" id="cub3d">
+      <div class="man-top"><b>CUB3D(6)</b><span>Games Manual</span><b>CUB3D(6)</b></div>
+      <div class="sec"><h4>NAME</h4><div class="body"><p><b>cub3D</b> — a Wolfenstein 3D–style raycasting engine in C</p></div></div>
+      <div class="sec"><h4>SYNOPSIS</h4><div class="body"><p class="syn">./cub3D <i>maps/level.cub</i></p></div></div>
+      <div class="sec"><h4>DESCRIPTION</h4><div class="body">
+        <p>Parses a <span class="hi">.cub</span> map file, validates that it's closed, then casts one ray per
+          screen column with DDA to find wall hits. Walls are textured per face (N/S/E/W) with
+          fisheye correction; floor and ceiling colours come from the map file. Built on
+          <b>MiniLibX</b> — so pixels are written to an image buffer by hand.</p>
+        <p>Includes a live minimap, sliding wall collisions and mouse look.</p>
+      </div></div>
+      <div class="sec"><h4>SEE ALSO</h4><div class="body"><p><a href="https://github.com/SaadM33/cub3d">github.com/SaadM33/cub3d</a></p></div></div>
+    </article>
+
+    <!-- minishell -->
+    <article class="man" id="minishell">
+      <div class="man-top"><b>MINISHELL(1)</b><span>User Commands</span><b>MINISHELL(1)</b></div>
+      <div class="sec"><h4>NAME</h4><div class="body"><p><b>minishell</b> — as beautiful as a shell</p></div></div>
+      <div class="sec"><h4>SYNOPSIS</h4><div class="body"><p class="syn">./minishell</p></div></div>
+      <div class="sec"><h4>DESCRIPTION</h4><div class="body">
+        <p>A bash-like interactive shell, written in C with a partner. Input goes through a
+          tokenizer, a parser that builds a command list, then an executor that wires up
+          <b>fork</b>, <b>pipe</b> and <b>dup2</b> for each stage.</p>
+        <dl class="opts">
+          <dt>| &lt; &gt; &gt;&gt;</dt><dd>pipelines and redirections, any length</dd>
+          <dt>&lt;&lt; EOF</dt><dd>heredoc, with expansion rules matching bash</dd>
+          <dt>$VAR $?</dt><dd>environment and exit-status expansion, ' and " quoting</dd>
+          <dt>^C ^D ^\</dt><dd>signals behave like bash, in the prompt and in children</dd>
+          <dt>builtins</dt><dd>echo -n, cd, pwd, export, unset, env, exit</dd>
+        </dl>
+      </div></div>
+      <div class="sec"><h4>BUGS</h4><div class="body"><p class="bugs">None known. Zero leaks under valgrind, excluding readline(3) — which is readline's problem.</p></div></div>
+      <div class="sec"><h4>SEE ALSO</h4><div class="body"><p><a href="https://github.com/SaadM33/minishell">github.com/SaadM33/minishell</a>, bash(1), fork(2), execve(2)</p></div></div>
+    </article>
+
+    <div class="ps1" style="margin-top:44px"><span class="u">saad@1337</span>:<span class="path">~/projects</span>$ <span class="cmd">head <span class="arg">-n 4 */README.md</span></span></div>
+    <div class="grid3">
+      <article class="man short" id="url-shortener">
+        <div class="man-top"><b>==&gt; url-shortener/README.md &lt;==</b><span>2026</span></div>
+        <div class="sec"><h4>NAME</h4><div class="body"><p><b>url-shortener</b> — turn long links into short ones</p></div></div>
+        <div class="sec"><h4>DESCRIPTION</h4><div class="body"><p>A small web service: POST a URL, get back a short code, and a redirect that counts its hits. My latest side project.</p></div></div>
+        <div class="sec"><h4>STATUS</h4><div class="body"><p class="tagline">active — repo going public soon</p></div></div>
+      </article>
+      <article class="man short" id="hackspace">
+        <div class="man-top"><b>==&gt; HackSpace/README.md &lt;==</b><span>2026</span></div>
+        <div class="sec"><h4>NAME</h4><div class="body"><p><b>HackSpace</b> — a collaborative team build</p></div></div>
+        <div class="sec"><h4>DESCRIPTION</h4><div class="body"><p>Built with a team of peers: shared repo, branches, code review and the usual merge-conflict diplomacy.</p></div></div>
+        <div class="sec"><h4>STATUS</h4><div class="body"><p class="tagline">ongoing — 2026</p></div></div>
+      </article>
+      <article class="man short" id="airbnb">
+        <div class="man-top"><b>==&gt; AirBnB_clone/README.md &lt;==</b><span>2024</span></div>
+        <div class="sec"><h4>NAME</h4><div class="body"><p><b>AirBnB clone</b> — the ALX full-stack project</p></div></div>
+        <div class="sec"><h4>DESCRIPTION</h4><div class="body"><p>Started as a Python command interpreter over a JSON file store, then grew a MySQL storage engine, a Flask web app and a REST API.</p></div></div>
+        <div class="sec"><h4>STACK</h4><div class="body"><p class="tagline">Python, cmd, SQLAlchemy, Flask, MySQL</p></div></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="log" aria-labelledby="log-h">
+    <h2 id="log-h" style="position:absolute;left:-9999px">Experience</h2>
+    <div class="ps1"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="cmd">git log <span class="arg">--oneline --graph --decorate life</span></span></div>
+    <div class="log out">
+      <div class="commit"><span class="g">*</span><span class="hash">e1337fa</span><span class="msg"><span class="ref">(<span class="h">HEAD -&gt; 1337</span>)</span> feat: 1337 Coding School, 42 Network <span class="when">· 2025 — present</span></span></div>
+      <div class="commit"><span class="g g-line" aria-hidden="true">|</span><span class="hash"></span><span class="detail"><ul>
+        <li>peer-to-peer, project-based curriculum in C/C++, Unix and networking</li>
+        <li>shipped minishell, cub3D, inception, ft_irc — each graded by peers and a strict norm</li>
+        <li>passed the Piscine: 4 weeks, ~12h/day, exams on paper-clean C</li>
+      </ul></span></div>
+      <div class="commit"><span class="g">*</span><span class="hash">a7c2d09</span><span class="msg">chore: side projects in public <span class="when">· 2026</span></span></div>
+      <div class="commit"><span class="g g-line" aria-hidden="true">|</span><span class="hash"></span><span class="detail"><ul>
+        <li>url-shortener, HackSpace (team)</li>
+      </ul></span></div>
+      <div class="commit"><span class="g">*</span><span class="hash">3f09b41</span><span class="msg"><span class="ref">(<span class="h">tag: alx-se</span>)</span> feat: ALX Software Engineering program <span class="when">· 2023 — 2024</span></span></div>
+      <div class="commit"><span class="g g-line" aria-hidden="true">|</span><span class="hash"></span><span class="detail"><ul>
+        <li>12-month intensive: C fundamentals, data structures, Linux, then Python and web</li>
+        <li>AirBnB clone end-to-end: console, ORM, Flask, MySQL, deployment</li>
+      </ul></span></div>
+      <div class="commit"><span class="g">*</span><span class="hash">0000001</span><span class="msg">init: printf("hello, world\n"); <span class="when">· first commit</span></span></div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="mail" aria-labelledby="mail-h">
+    <h2 id="mail-h" style="position:absolute;left:-9999px">Contact</h2>
+    <div class="ps1"><span class="u">saad@1337</span>:<span class="path">~</span>$ <span class="cmd">mail <span class="arg">hello@saadm.tech</span></span></div>
+    <form class="mail out" id="mailform" autocomplete="off">
+      <div class="mrow"><label for="m-to">To:</label><input id="m-to" value="hello@saadm.tech" readonly></div>
+      <div class="mrow"><label for="m-subj">Subject:</label><input id="m-subj" placeholder="internship / project / just saying hi"></div>
+      <textarea id="m-body" aria-label="Message" placeholder="Write your message. Press Ctrl+D (or Ctrl+Enter) to send, like the real thing."></textarea>
+      <div class="actions">
+        <button class="btn" type="submit">send</button>
+        <span><span class="kbd">Ctrl</span>+<span class="kbd">D</span> opens it in your mail client</span>
+        <span id="mail-status" class="amb" aria-live="polite"></span>
+      </div>
+    </form>
+    <div class="links">
+      <span>email</span><a href="mailto:hello@saadm.tech">hello@saadm.tech</a>
+      <span>github</span><a href="https://github.com/SaadM33">github.com/SaadM33</a>
+      <span>linkedin</span><a href="https://www.linkedin.com/in/saadm">linkedin.com/in/saadm</a>
+      <span>web</span><a href="https://saadm.tech">saadm.tech</a>
+    </div>
+  </section>
+
+  <!-- LIVE SHELL -->
+  <section class="shell" aria-label="Interactive shell">
+    <p class="hint"># everything above is static. this part is real — try <span class="hi">help</span>, <span class="hi">ls</span>, <span class="hi">cat minishell</span>.</p>
+    <div id="term-out" aria-live="polite"></div>
+    <div class="line" onclick="document.getElementById('term-in').focus()">
+      <span class="ps1"><span class="u">saad@1337</span>:<span class="path" id="term-cwd">~</span>$ </span>
+      <input id="term-in" type="text" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Shell command">
+    </div>
+  </section>
+
+  <footer class="manfoot">
+    <span>saadm.tech</span><span>November 2026</span><span>SAAD(1)</span>
+  </footer>
+</div>
+
+<div class="tmux" role="navigation" aria-label="Sections">
+  <span class="sess">[saad]</span>
+  <nav>
+    <a href="#top" data-s="top">0:whoami</a>
+    <a href="#about" data-s="about">1:about</a>
+    <a href="#projects" data-s="projects">2:projects</a>
+    <a href="#log" data-s="log">3:log</a>
+    <a href="#mail" data-s="mail">4:mail</a>
+  </nav>
+  <span class="right"><span class="clk-date" id="clk-date"></span> <span id="clk">--:--</span></span>
+</div>
+
+<script>
+(function(){
+  /* ---------- hero typing ---------- */
+  const hero = document.querySelector('.hero');
+  const cmd = hero.querySelector('.cmd');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function finish(){ hero.classList.add('typed'); }
+  if (reduce) { finish(); }
+  else {
+    const text = cmd.dataset.type; cmd.textContent = '';
+    cmd.style.visibility = 'visible';
+    const cur = document.createElement('span'); cur.className = 'tcur';
+    cmd.after(cur);
+    let i = 0;
+    setTimeout(function step(){
+      cmd.textContent = text.slice(0, ++i);
+      if (i < text.length) setTimeout(step, 70 + Math.random()*60);
+      else setTimeout(()=>{ cur.remove(); finish(); }, 260);
+    }, 350);
+  }
+
+  /* ---------- tmux bar: active section + clock ---------- */
+  const links = [...document.querySelectorAll('.tmux a')];
+  const secs = links.map(a => document.getElementById(a.dataset.s));
+  function onScroll(){
+    const y = innerHeight * .35; let cur = secs[0];
+    for (const s of secs) if (s.getBoundingClientRect().top < y) cur = s;
+    if (innerHeight + scrollY >= document.body.scrollHeight - 4) cur = secs[secs.length-1];
+    links.forEach(a => a.classList.toggle('on', a.dataset.s === cur.id));
+  }
+  addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  function tick(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('clk').textContent = pad(d.getHours())+':'+pad(d.getMinutes());
+    document.getElementById('clk-date').textContent = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' ';
+  }
+  tick(); setInterval(tick, 15000);
+
+  /* ---------- mail ---------- */
+  const form = document.getElementById('mailform');
+  const status = document.getElementById('mail-status');
+  function send(e){
+    if (e) e.preventDefault();
+    const s = document.getElementById('m-subj').value || 'Hello from saadm.tech';
+    const b = document.getElementById('m-body').value;
+    status.textContent = 'EOT — handing off to your mail client…';
+    location.href = 'mailto:hello@saadm.tech?subject=' + encodeURIComponent(s) + '&body=' + encodeURIComponent(b);
+  }
+  form.addEventListener('submit', send);
+  form.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'd' || e.key === 'Enter')) send(e);
+  });
+
+  /* ---------- tiny shell ---------- */
+  const out = document.getElementById('term-out');
+  const inp = document.getElementById('term-in');
+  const projects = {
+    'ft_irc': 'ft_irc — IRC server in C++98. One poll() loop, non-blocking sockets,\nchannels, operators, MODE +itkol. Tested with irssi.\n→ github.com/SaadM33/Internet-Relay-Chat',
+    'inception': 'inception — Docker Compose stack: NGINX (TLS) → WordPress/php-fpm → MariaDB.\nEvery image built from scratch, named volumes, private network.\n→ github.com/SaadM33/inception',
+    'cub3d': 'cub3D — raycasting engine in C + MiniLibX. DDA, textured walls, minimap,\ncollisions.\n→ github.com/SaadM33/cub3d',
+    'minishell': 'minishell — bash-like shell in C. Pipes, redirections, heredoc,\n$VAR / $? expansion, signals, builtins. You are (sort of) using it now.\n→ github.com/SaadM33/minishell',
+    'url-shortener': 'url-shortener — 2026. Short links + redirect counter. Web service.',
+    'hackspace': 'HackSpace — 2026. Collaborative team project.',
+    'airbnb_clone': 'AirBnB clone — ALX. Python console → MySQL → Flask → REST API.'
+  };
+  const files = {'about.txt': document.querySelector('.about .out').innerText.trim(), 'contact.txt':'email   hello@saadm.tech\ngithub  github.com/SaadM33\nweb     saadm.tech'};
+  let cwd = '~';
+  const hist = []; let hi = 0;
+  const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  function print(html, cls){ const d = document.createElement('div'); if (cls) d.className = cls; d.innerHTML = html; out.appendChild(d); }
+  function echoCmd(c){ print('<span class="ps1"><span class="u">saad@1337</span>:<span class="path">'+cwd+'</span>$ </span><span class="hi">'+esc(c)+'</span>'); }
+  function findProj(a){ if(!a) return null; a = a.toLowerCase().replace(/\/$/,'').replace(/^projects\//,''); if (a==='airbnb'||a==='airbnb_clone') a='airbnb_clone'; if (a==='cub3d') a='cub3d'; return projects[a] ? a : null; }
+  const cmds = {
+    help(){ return esc('available commands:\n  ls [projects]     list things\n  cat <file|proj>   print a file or project summary\n  man <proj>        jump to the manual page\n  cd <dir>          change directory (~, projects)\n  whoami, pwd, date, echo, history, clear\n  open github|mail  leave the terminal'); },
+    ls(a){ const t = a[0] && a[0].replace(/^-\w+\s*/,'');
+      const arg = a.filter(x=>!x.startsWith('-'))[0];
+      if ((arg && arg.replace(/\/$/,'')==='projects') || (!arg && cwd==='~/projects')) return Object.keys(projects).map(p=>p==='minishell'?p+'*':p+'/').join('  ');
+      if (arg) return 'ls: cannot access \''+esc(arg)+'\': No such file or directory';
+      return 'about.txt  contact.txt  projects/'; },
+    cat(a){ if(!a.length) return 'cat: missing operand (try: cat about.txt)';
+      return a.map(f=>{ const k = f.replace(/^~\//,''); if (files[k] && cwd==='~') return esc(files[k]); const p = findProj(k); if (p) return esc(projects[p]); if (k==='projects'||k==='projects/') return 'cat: projects: Is a directory'; return 'cat: '+esc(f)+': No such file or directory'; }).join('\n\n'); },
+    man(a){ const p = findProj(a[0]); if(!a[0]) return 'What manual page do you want?\nFor example, try \'man minishell\'.';
+      if(!p) return 'No manual entry for '+esc(a[0]);
+      const id = {'airbnb_clone':'airbnb'}[p] || p; document.getElementById(id).scrollIntoView({behavior: reduce?'auto':'smooth'}); history.replaceState(null,'','#'+id); return 'opening '+p+'(1)…'; },
+    cd(a){ const d = (a[0]||'~').replace(/\/$/,''); if (d==='~'||d==='..'&&cwd!=='~'||d==='') { cwd='~'; } else if (d==='projects'&&cwd==='~'||d==='~/projects'){ cwd='~/projects'; } else if (d==='..'){ return 'cd: permission denied: /home (nice try)'; } else return 'cd: no such file or directory: '+esc(d); document.getElementById('term-cwd').textContent = cwd; return ''; },
+    whoami(){ return 'saad'; },
+    pwd(){ return cwd.replace('~','/home/saad'); },
+    date(){ return new Date().toString(); },
+    echo(a){ return esc(a.join(' ').replace(/\$USER/g,'saad').replace(/\$\?/g,'0').replace(/^["']|["']$/g,'')); },
+    history(){ return hist.map((h,i)=>String(i+1).padStart(4)+'  '+esc(h)).join('\n'); },
+    clear(){ out.innerHTML=''; return ''; },
+    open(a){ if (a[0]==='github'){ window.open('https://github.com/SaadM33','_blank','noopener'); return 'opening github.com/SaadM33…'; } if (a[0]==='mail'){ location.href='mailto:hello@saadm.tech'; return 'opening mail…'; } return 'usage: open github|mail'; },
+    mail(){ document.getElementById('mail').scrollIntoView({behavior: reduce?'auto':'smooth'}); setTimeout(()=>document.getElementById('m-subj').focus({preventScroll:true}), 500); return 'jumping to mail…'; },
+    sudo(){ return 'saad is not in the sudoers file. This incident will be reported.'; },
+    exit(){ return 'logout\n…just kidding. try `mail` instead.'; },
+    vim(){ return 'you would never get out. try `cat` instead.'; },
+    rm(a){ return a.join(' ').includes('-rf') ? 'rm: refusing to remove \'/\' recursively — preserve-root' : 'rm: read-only file system'; },
+  };
+  cmds.ll = a => cmds.ls(['-la', ...a]);
+  cmds.emacs = cmds.vim;
+  function run(line){
+    const raw = line.trim(); echoCmd(line);
+    if (!raw) return;
+    hist.push(raw); hi = hist.length;
+    const parts = raw.split(/\s+/); const name = parts[0]; const args = parts.slice(1);
+    if (cmds[name]) { const r = cmds[name](args); if (r) print(r); }
+    else print('minishell: '+esc(name)+': command not found', 'err');
+  }
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ run(inp.value); inp.value=''; inp.scrollIntoView({block:'nearest'}); }
+    else if (e.key === 'ArrowUp'){ if (hi>0){ inp.value = hist[--hi]; } e.preventDefault(); }
+    else if (e.key === 'ArrowDown'){ if (hi<hist.length-1){ inp.value = hist[++hi]; } else { hi=hist.length; inp.value=''; } e.preventDefault(); }
+    else if (e.key === 'Tab'){
+      e.preventDefault();
+      const parts = inp.value.split(' '); const last = parts.pop().toLowerCase();
+      const pool = parts.length ? [...Object.keys(projects), ...Object.keys(files), 'projects/'] : Object.keys(cmds);
+      const m = pool.filter(p => p.startsWith(last));
+      if (m.length === 1) { parts.push(m[0]); inp.value = parts.join(' ') + (m[0].endsWith('/')?'':' '); }
+      else if (m.length > 1) { echoCmd(inp.value); print(m.join('  ')); }
+    }
+    else if (e.key === 'l' && e.ctrlKey){ e.preventDefault(); out.innerHTML=''; }
+  });
+})();
+</script>
+</body>
+</html>

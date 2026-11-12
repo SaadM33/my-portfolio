@@ -1,0 +1,38 @@
+          <svg viewBox="0 0 380 210" aria-label="Input line flows through lexer, parser, expander and executor, which forks two processes joined by a pipe and redirects output to a file">
+            <text x="6" y="16" class="sm">INPUT</text>
+            <text x="6" y="32" class="lbl" style="font-size:10.5px">$ echo $HOME | wc -c &gt; out</text>
+            <path class="wire ln" pathLength="1" d="M40 40 V62" style="--i:0" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M40 40 V62" style="--i:0"/>
+            <!-- stages -->
+            <rect class="part" x="6" y="64" width="76" height="34" style="--i:0"/><text x="44" y="80" text-anchor="middle" class="lbl">lexer</text><text x="44" y="91" text-anchor="middle" class="sm">tokens</text>
+            <rect class="part" x="102" y="64" width="76" height="34" style="--i:1"/><text x="140" y="80" text-anchor="middle" class="lbl">parser</text><text x="140" y="91" text-anchor="middle" class="sm">cmd list</text>
+            <rect class="part" x="198" y="64" width="76" height="34" style="--i:2"/><text x="236" y="80" text-anchor="middle" class="lbl">expander</text><text x="236" y="91" text-anchor="middle" class="sm">$VAR · quotes</text>
+            <rect class="part" x="294" y="64" width="80" height="34" style="--i:3"/><text x="334" y="80" text-anchor="middle" class="lbl">executor</text><text x="334" y="91" text-anchor="middle" class="sm">fork · execve</text>
+            <path class="wire ln" pathLength="1" d="M82 81 H100" style="--i:1" marker-end="url(#ah)"/>
+            <path class="wire ln" pathLength="1" d="M178 81 H196" style="--i:2" marker-end="url(#ah)"/>
+            <path class="wire ln" pathLength="1" d="M274 81 H292" style="--i:3" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M82 81 H100" style="--i:1"/>
+            <path class="signal" pathLength="1" d="M178 81 H196" style="--i:2"/>
+            <path class="signal" pathLength="1" d="M274 81 H292" style="--i:3"/>
+            <!-- processes -->
+            <path class="wire ln" pathLength="1" d="M334 98 V116 H150 V136" style="--i:4" marker-end="url(#ah)"/>
+            <path class="wire ln" pathLength="1" d="M334 116 V136" style="--i:4" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M334 98 V116 H150 V136" style="--i:4"/>
+            <rect class="part" x="102" y="138" width="96" height="40" style="--i:4"/><text x="150" y="155" text-anchor="middle" class="lbl">echo</text><text x="150" y="168" text-anchor="middle" class="sm">child #1 · builtin</text>
+            <rect class="part" x="286" y="138" width="88" height="40" style="--i:5"/><text x="330" y="155" text-anchor="middle" class="lbl">/usr/bin/wc</text><text x="330" y="168" text-anchor="middle" class="sm">child #2</text>
+            <!-- pipe -->
+            <rect class="ln" x="210" y="152" width="64" height="12"/>
+            <path class="wire ln" pathLength="1" d="M198 158 H284" style="--i:5" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M198 158 H284" style="--i:5"/>
+            <text x="242" y="148" text-anchor="middle" class="sm">pipe(fd)</text>
+            <!-- redirect -->
+            <path class="wire ln" pathLength="1" d="M330 178 V196 H290" style="--i:6" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M330 178 V196 H290" style="--i:6"/>
+            <text x="252" y="199" class="lbl">out</text>
+            <path class="ln thin" d="M246 189 h22 l6 6 v8 h-28z"/>
+            <g class="ann">
+              <path class="lead" d="M44 98 V190 H70"/><circle class="lead-dot" cx="44" cy="98" r="2"/>
+              <text x="74" y="186" class="note">heredoc, ' " and</text>
+              <text x="74" y="197" class="note">ctrl-C all handled here</text>
+            </g>
+          </svg>

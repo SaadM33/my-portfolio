@@ -1,129 +1,182 @@
 /**
  * ─────────────────────────────────────────────────────────────
- *  ALL SITE CONTENT LIVES HERE.
- *  Edit this file to update the portfolio — no other code needed.
- *  Everything marked TODO is placeholder content.
+ *  ALL SITE CONTENT LIVES HERE. Edit this file to update the site.
+ *  Facts come from your GitHub repos. Lines marked TODO are guesses
+ *  or placeholders: check / replace them.
  * ─────────────────────────────────────────────────────────────
  */
 
 export const site = {
-  name: "Saad M.", // TODO: full name
-  handle: "saadm",
-  domain: "saadm.tech",
+  name: "Saad M", // big name in the hero (the red "." is added automatically)
+  fullName: "Saad Maaqili", // TODO: confirm spelling (commits also say "Saad El Maaqili") — used for SEO/title
+  initials: "S.M.",
   url: "https://saadm.tech",
-  roles: ["Software Engineer", "Full-Stack Developer", "Problem Solver"], // TODO: cycles in the hero
-  tagline: "I build fast, thoughtful software — from clean interfaces to the systems behind them.", // TODO
-  location: "Earth 🌍", // TODO (or set to "")
-  available: true, // shows the "open to opportunities" badge
-  email: "hello@saadm.tech", // TODO: public email
-  resume: "/resume.pdf", // TODO: drop your CV at public/resume.pdf
-  // TODO: create a free form at https://formspree.io and paste its endpoint here.
-  // Leave empty to hide the form and only show the email button.
-  formEndpoint: "",
+  drawingNo: "SM-2026-001",
+  rev: "2026.11", // bump when you update the site
+  email: "hello@saadm.tech", // TODO: real public email (this one needs the domain first)
+  github: "SaadM33",
+  linkedin: "", // TODO: e.g. "linkedin.com/in/your-handle" (empty = hidden)
+  location: "Morocco",
+  timezone: "UTC+1",
   description:
-    "Portfolio of Saad M. — software engineer building fast, modern web experiences.", // SEO
+    "Saad Maaqili — software engineering student at 1337 (42 Network). Servers, shells, renderers, and the containers they ship in.",
 };
 
-export const socials = [
-  { label: "GitHub", href: "https://github.com/", icon: "github" }, // TODO
-  { label: "LinkedIn", href: "https://linkedin.com/in/", icon: "linkedin" }, // TODO
-  { label: "X", href: "https://x.com/", icon: "x" }, // TODO
-] as const;
+export const hero = {
+  label: "1337 · 42 NETWORK", // text on the dimension line under the name
+  // Wrap words in *stars* to underline them in red.
+  lede: "Software engineering student at 1337. I build things close to the metal — *servers, shells, renderers* — and the containers they ship in.",
+  notes: [
+    "Primary material: C and C++98. Tolerances: zero leaks, zero norm errors.",
+    "Secondary: Docker / Compose, Linux, sockets, FastAPI, NestJS, React.",
+    "Currently fabricating: HackSpace (team of 5) and a URL shortener.",
+  ],
+};
 
 export const about = {
-  // TODO: your story. Each string is a paragraph.
-  paragraphs: [
-    "Hey! I'm Saad — a developer who loves turning ideas into products people actually enjoy using. I care about clean code, smooth UX, and shipping things that work.",
-    "Right now I'm focused on building modern web apps and sharpening my skills across the stack. When I'm not coding, you'll find me exploring new tech, learning something random, or [your hobby here].",
+  notes: [
+    // TODO: these are written in your voice — rewrite anything that isn't true for you.
+    "I learned to program by rebuilding the things I use every day — a shell, an IRC server, a 3D renderer — until I understood why they work.",
+    "At 1337 there are no teachers and no lectures: just specs, peers and an automated grader that does not care how late it is.",
+    "Before that, ALX gave me the habits — Git every day, small commits, reading man pages before Stack Overflow.",
+    "Next on the bench: more networking, more infrastructure, and web services that are boring in the best way.",
   ],
-  stats: [
-    { value: "3+", label: "Years coding" }, // TODO
-    { value: "15+", label: "Projects built" }, // TODO
-    { value: "∞", label: "Cups of coffee" },
+  handNote: "all dimensions in commits, not hours.",
+  spec: [
+    { k: "Based", v: "Morocco", tol: "UTC+1" },
+    { k: "School", v: "1337 Coding School — 42 Network" },
+    { k: "Prior", v: "ALX Software Engineering" },
+    { k: "Languages", v: "C, C++98, Python, TypeScript, Bash, SQL" },
+    { k: "Systems", v: "POSIX sockets, poll(), fork/execve, pipes, signals" },
+    { k: "Infra", v: "Docker, Compose, NGINX + TLS, MariaDB, Redis" },
+    { k: "Backend", v: "FastAPI, NestJS, PostgreSQL, MySQL, OAuth 2.0" },
+    { k: "Tools", v: "git, make, gdb, valgrind, GitHub Actions", tol: "±0 leaks" },
   ],
-  photo: "", // TODO: e.g. "/me.jpg" placed in public/. Empty = initials avatar.
 };
 
-export const skills = [
-  // TODO: adjust groups & items
-  { group: "Languages", items: ["TypeScript", "JavaScript", "Python", "Java", "SQL"] },
-  { group: "Frontend", items: ["React", "Next.js", "Astro", "Tailwind CSS", "HTML/CSS"] },
-  { group: "Backend", items: ["Node.js", "Express", "PostgreSQL", "MongoDB", "REST APIs"] },
-  { group: "Tools", items: ["Git", "Docker", "Linux", "Figma", "Vercel"] },
-];
-
-export type Project = {
+export type Detail = {
+  id: string; // letter shown in the bubble
   title: string;
+  sub: string;
+  scale: string; // small text, top right
+  diagram: "irc" | "inception" | "cub3d" | "minishell";
   description: string;
-  tags: string[];
-  image?: string; // path in public/, e.g. "/projects/foo.png"
-  github?: string;
-  live?: string;
-  featured?: boolean;
+  material: string;
+  repo?: string; // "owner/name"
 };
 
-export const projects: Project[] = [
-  // TODO: replace with real projects
+/** The 4 projects drawn as diagrams. */
+export const details: Detail[] = [
   {
-    title: "Project Nebula",
+    id: "A",
+    title: "ft_irc",
+    sub: "IRC server · C++98",
+    scale: "SCALE 1:1<br>1337 · 2026",
+    diagram: "irc",
     description:
-      "A real-time collaborative workspace with live cursors, presence, and instant sync. Built to explore CRDTs and websockets at scale.",
-    tags: ["Next.js", "TypeScript", "WebSockets", "PostgreSQL"],
-    github: "https://github.com/",
-    live: "https://example.com",
-    featured: true,
+      "An IRC server that real clients connect to, built around a single non-blocking poll() loop with buffered partial reads. Implements 13 commands — including KICK, INVITE, TOPIC and MODE with +i +t +k +o +l. Team of three; I'm the top committer.",
+    material: "MAT: C++98 · sockets · poll(2)",
+    repo: "SaadM33/Internet-Relay-Chat",
   },
   {
-    title: "Pulse Analytics",
+    id: "B",
+    title: "Inception",
+    sub: "Container infrastructure · Docker",
+    scale: "SCALE 1:1<br>1337 · 2026",
+    diagram: "inception",
     description:
-      "Privacy-first analytics dashboard with beautiful charts and sub-second queries over millions of events.",
-    tags: ["React", "Node.js", "ClickHouse", "Tailwind CSS"],
-    github: "https://github.com/",
-    featured: true,
+      "Eight services, each built from a plain Debian image with my own Dockerfiles: NGINX terminating TLS 1.2/1.3 in front of WordPress on php-fpm (set up with WP-CLI) and MariaDB, plus Redis, Adminer, FTP, a static site and cAdvisor. Ships with user and developer guides.",
+    material: "MAT: Docker · Compose · NGINX · MariaDB",
+    repo: "SaadM33/inception",
   },
   {
-    title: "CLI Toolkit",
-    description: "A set of developer CLI utilities that automate the boring parts of my workflow.",
-    tags: ["Python", "CLI"],
-    github: "https://github.com/",
+    id: "C",
+    title: "cub3D",
+    sub: "Raycasting engine · C / MiniLibX",
+    scale: "PLAN VIEW<br>1337 · 2025",
+    diagram: "cub3d",
+    description:
+      "A Wolfenstein-style first-person renderer in C using DDA raycasting. My part: the .cub map parser, smooth key-state movement, the minimap, mouse look, and doors that open — which the rays have to treat as a special case.",
+    material: "MAT: C · MiniLibX · DDA",
+    repo: "authyx/cub3d",
   },
   {
-    title: "Portfolio v1",
-    description: "This very website — static, fast, accessible, and fully data-driven.",
-    tags: ["Astro", "Tailwind CSS"],
-    github: "https://github.com/",
-    live: "https://saadm.tech",
+    id: "D",
+    title: "minishell",
+    sub: "Bash-like shell · C",
+    scale: "FLOW · NTS<br>1337 · 2025",
+    diagram: "minishell",
+    description:
+      "A shell in C with a hand-written lexer and parser, quote-aware $VAR and $? expansion, pipes, < > >> redirections and heredocs, seven builtins and correct Ctrl-C handling. Leak-checked under valgrind.",
+    material: "MAT: C · readline · fork(2) · pipe(2)",
+    repo: "SaadM33/minishell",
   },
 ];
 
-export const experience = [
-  // TODO: real experience (most recent first)
+/** "Parts list" — other work, shown as a table. */
+export const parts = [
   {
-    role: "Software Engineer Intern",
-    org: "Company Name",
-    period: "2025 — Present",
-    points: [
-      "Built and shipped features used by thousands of users.",
-      "Improved page load performance by 40% through code-splitting and caching.",
-    ],
+    name: "HackSpace",
+    isNew: true,
+    description:
+      "Hackathon platform (NestJS + React + PostgreSQL), team of 5. I set up the initial monorepo and built Google and 42 Intra OAuth plus team creation & membership end to end, with Jest specs.",
+    year: "2026",
+    status: "team build",
+    repo: "Dexter88xD/HackSpace",
   },
   {
-    role: "Freelance Developer",
-    org: "Self-employed",
-    period: "2023 — 2025",
-    points: ["Designed and developed websites and web apps for small businesses."],
+    name: "url-shortener",
+    isNew: true,
+    description:
+      "Short links with custom aliases, expiry, privacy-friendly click analytics and QR codes. FastAPI / MySQL / JWT core written by hand; the React dashboard built with Claude.",
+    year: "2026",
+    status: "in progress",
+    repo: "", // private for now — TODO: add "SaadM33/url-shortener" once public (purge backend/.env first!)
+  },
+  {
+    name: "AirBnB clone",
+    isNew: false,
+    description: "Python command interpreter, Flask web app and MySQL storage, built step by step at ALX.",
+    year: "2024",
+    status: "shipped",
+    repo: "SaadM33/AirBnB_clone",
   },
 ];
 
-export const education = [
-  // TODO
-  { degree: "B.Sc. Computer Science", org: "University Name", period: "2022 — 2026" },
+/** Revision history — newest first. */
+export const revisions = [
+  {
+    rev: "E",
+    date: "2026 — now",
+    title: "HackSpace, url-shortener.",
+    text: "First projects outside the curriculum — and the first with a team of five and real code review.",
+    by: "self",
+    current: true,
+  },
+  {
+    rev: "D",
+    date: "2025 — present",
+    title: "1337 Coding School, 42 Network.",
+    text: "Common core: minishell, cub3D, ft_irc, Inception. Peer-evaluated, project-based, no lectures.",
+    by: "1337 · 42",
+  },
+  {
+    rev: "C",
+    date: "2023 — 2024",
+    title: "ALX Software Engineering.",
+    text: "Low-level C, Python, SQL, Flask, the AirBnB clone, and a lot of sandbox servers.",
+    by: "ALX Africa",
+  },
+  {
+    rev: "B",
+    date: "2023", // TODO: adjust or delete
+    title: "Initial issue.",
+    text: "First C program that compiled without warnings. Took a while.",
+    by: "—",
+  },
 ];
 
-export const nav = [
-  { label: "About", href: "#about" },
-  { label: "Skills", href: "#skills" },
-  { label: "Projects", href: "#projects" },
-  { label: "Experience", href: "#experience" },
-  { label: "Contact", href: "#contact" },
-];
+export const contact = {
+  heading: ["Have a spec?", "Send it over."],
+  text: "Open to internships, systems or infrastructure work, and interesting problems. I reply within a day or two.", // TODO
+};

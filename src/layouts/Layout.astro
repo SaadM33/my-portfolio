@@ -1,19 +1,15 @@
 ---
 import "../styles/global.css";
+import Defs from "../components/diagrams/Defs.astro";
 import { site } from "../data/site";
 
-interface Props {
-  title?: string;
-  description?: string;
-}
-
-const { title = `${site.name} — ${site.roles[0]}`, description = site.description } = Astro.props;
+interface Props { title?: string; description?: string }
+const { title = `${site.fullName} — Drawing Set`, description = site.description } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
-const ogImage = new URL("/og.png", Astro.site ?? site.url);
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -22,63 +18,35 @@ const ogImage = new URL("/og.png", Astro.site ?? site.url);
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={new URL("/og.png", Astro.site ?? site.url)} />
     <meta name="twitter:card" content="summary_large_image" />
-
-    <meta name="theme-color" content="#08080d" />
-
+    <meta name="theme-color" content="#f2f0e8" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+Condensed:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Apply saved theme before paint to avoid flashes -->
-    <script is:inline>
-      (() => {
-        let t = null;
-        try { t = localStorage.getItem("theme"); } catch {}
-        if (!t) t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        document.documentElement.classList.toggle("dark", t === "dark");
-      })();
-    </script>
   </head>
-  <body class="min-h-screen overflow-x-hidden">
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-white"
-      >Skip to content</a
-    >
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <Defs />
     <slot />
-
     <script>
-      // Scroll reveal
-      const io = new IntersectionObserver(
-        (entries) =>
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              e.target.classList.add("in");
-              io.unobserve(e.target);
-            }
-          }),
-        { threshold: 0.12 },
-      );
-      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
-
-      // Card spotlight follows cursor
-      document.addEventListener("pointermove", (ev) => {
-        const card = (ev.target as HTMLElement)?.closest?.(".card") as HTMLElement | null;
-        if (!card) return;
-        const r = card.getBoundingClientRect();
-        card.style.setProperty("--mx", `${ev.clientX - r.left}px`);
-        card.style.setProperty("--my", `${ev.clientY - r.top}px`);
-      });
+      // Draw diagram lines in once they scroll into view.
+      const els = document.querySelectorAll(".draw");
+      if (!("IntersectionObserver" in window)) els.forEach((e) => e.classList.add("in"));
+      else {
+        const io = new IntersectionObserver(
+          (es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }),
+          { threshold: 0.25 },
+        );
+        els.forEach((e) => io.observe(e));
+      }
     </script>
   </body>
 </html>

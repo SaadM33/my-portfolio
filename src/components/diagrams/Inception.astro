@@ -1,0 +1,41 @@
+          <svg viewBox="0 0 380 210" aria-label="Client connects over TLS to nginx, which passes to wordpress php-fpm, which queries mariadb, all on a docker network with volumes">
+            <!-- network boundary -->
+            <rect class="ln dash" x="70" y="18" width="304" height="118" rx="2"/>
+            <text x="78" y="13" class="sm">DOCKER NETWORK · inception (bridge)</text>
+            <!-- client -->
+            <text x="4" y="64" class="lbl">client</text>
+            <text x="4" y="76" class="sm">:443</text>
+            <path class="wire ln" pathLength="1" d="M28 84 V96 H86" style="--i:0" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M28 84 V96 H86" style="--i:0"/>
+            <!-- containers -->
+            <rect class="part" x="88" y="62" width="76" height="56" style="--i:0"/>
+            <text x="126" y="84" text-anchor="middle" class="cond">nginx</text><text x="126" y="98" text-anchor="middle" class="sm">TLSv1.3</text><text x="126" y="109" text-anchor="middle" class="sm">:443</text>
+            <rect class="part" x="190" y="62" width="82" height="56" style="--i:1"/>
+            <text x="231" y="84" text-anchor="middle" class="cond">wordpress</text><text x="231" y="98" text-anchor="middle" class="sm">php-fpm</text><text x="231" y="109" text-anchor="middle" class="sm">:9000</text>
+            <rect class="part" x="298" y="62" width="70" height="56" style="--i:2"/>
+            <text x="333" y="84" text-anchor="middle" class="cond">mariadb</text><text x="333" y="98" text-anchor="middle" class="sm">mysqld</text><text x="333" y="109" text-anchor="middle" class="sm">:3306</text>
+            <path class="wire ln" pathLength="1" d="M164 90 H188" style="--i:1" marker-end="url(#ah)"/>
+            <path class="wire ln" pathLength="1" d="M272 90 H296" style="--i:2" marker-end="url(#ah)"/>
+            <path class="signal" pathLength="1" d="M164 90 H188" style="--i:1"/>
+            <path class="signal" pathLength="1" d="M272 90 H296" style="--i:2"/>
+            <!-- volumes -->
+            <g>
+              <path class="part" d="M196 164 v24 a35 7 0 0 0 70 0 v-24" style="--i:3"/>
+              <ellipse class="part" cx="231" cy="164" rx="35" ry="7" style="--i:3"/>
+              <text x="231" y="186" text-anchor="middle" class="sm">wp_data</text>
+              <path class="part" d="M298 164 v24 a35 7 0 0 0 70 0 v-24" style="--i:4"/>
+              <ellipse class="part" cx="333" cy="164" rx="35" ry="7" style="--i:4"/>
+              <text x="333" y="186" text-anchor="middle" class="sm">db_data</text>
+            </g>
+            <path class="wire ln thin" pathLength="1" d="M231 118 V157" style="--i:3"/>
+            <path class="wire ln thin" pathLength="1" d="M333 118 V157" style="--i:4"/>
+            <path class="wire ln thin" pathLength="1" d="M126 118 V166 Q126 176 136 176 H196" style="--i:3"/>
+            <path class="signal" pathLength="1" d="M231 118 V157" style="--i:3"/>
+            <path class="signal" pathLength="1" d="M333 118 V157" style="--i:4"/>
+            <g class="ann">
+              <path class="lead" d="M126 62 V40 H160"/><circle class="lead-dot" cx="126" cy="62" r="2"/>
+              <text x="164" y="43" class="note">only port exposed</text>
+              <text x="70" y="186" class="note">FROM debian — no</text>
+              <text x="70" y="197" class="note">prebuilt images</text>
+            </g>
+          </svg>

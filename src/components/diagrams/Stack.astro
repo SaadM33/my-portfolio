@@ -1,0 +1,52 @@
+      <svg viewBox="0 0 460 400">
+        <!-- centre line -->
+        <line class="ln center" x1="190" y1="20" x2="190" y2="360"/>
+        <!-- layers: bottom up -->
+        <rect class="wire ln" pathLength="1" x="60" y="270" width="260" height="66" style="--i:0"/>
+        <rect x="60" y="270" width="260" height="66" fill="url(#hatch)" opacity=".9"/>
+        <rect class="wire ln" pathLength="1" x="80" y="210" width="220" height="60" style="--i:1"/>
+        <rect x="80" y="210" width="220" height="60" fill="url(#hatch2)"/>
+        <rect class="wire ln" pathLength="1" x="100" y="156" width="180" height="54" style="--i:2"/>
+        <rect x="100" y="156" width="180" height="54" fill="url(#dots)"/>
+        <rect class="wire ln" pathLength="1" x="124" y="108" width="132" height="48" style="--i:3"/>
+        <!-- labels on layers -->
+        <g class="ann">
+          <rect x="140" y="292" width="100" height="20" fill="#f2f0e8"/>
+          <text x="190" y="306" text-anchor="middle" class="lbl">C · POSIX · libc</text>
+          <rect x="132" y="232" width="116" height="18" fill="#f2f0e8"/>
+          <text x="190" y="245" text-anchor="middle" class="lbl">C++98 · sockets</text>
+          <rect x="138" y="176" width="104" height="16" fill="#f2f0e8"/>
+          <text x="190" y="188" text-anchor="middle" class="lbl">Docker · Linux</text>
+          <text x="190" y="136" text-anchor="middle" class="lbl">React · JS · Py</text>
+        </g>
+        <!-- vertical dimension -->
+        <g class="ann">
+          <line class="ln thin" x1="20" y1="108" x2="56" y2="108"/>
+          <line class="ln thin" x1="20" y1="336" x2="56" y2="336"/>
+          <line class="ln thin" x1="30" y1="112" x2="30" y2="332" marker-start="url(#ah)" marker-end="url(#ah)"/>
+          <rect x="22" y="200" width="16" height="44" fill="#f2f0e8"/>
+          <text transform="translate(34 222) rotate(-90)" text-anchor="middle" class="sm">2023→26</text>
+        </g>
+        <!-- horizontal dimension -->
+        <g class="ann">
+          <line class="ln thin" x1="60" y1="340" x2="60" y2="376"/>
+          <line class="ln thin" x1="320" y1="340" x2="320" y2="376"/>
+          <line class="ln thin" x1="64" y1="368" x2="316" y2="368" marker-start="url(#ah)" marker-end="url(#ah)"/>
+          <rect x="146" y="361" width="88" height="14" fill="#f2f0e8"/>
+          <text x="190" y="371" text-anchor="middle" class="sm">FOUNDATION ≈ 70%</text>
+        </g>
+        <!-- red leaders -->
+        <g class="ann">
+          <path class="lead" d="M300 300 L336 300 L352 284 L450 284"/>
+          <circle class="lead-dot" cx="300" cy="300" r="2.2"/>
+          <text x="356" y="278" class="note">load-bearing</text>
+          <path class="lead" d="M256 130 L296 130 L318 76 L450 76"/>
+          <circle class="lead-dot" cx="256" cy="130" r="2.2"/>
+          <text x="322" y="70" class="note">still curing</text>
+          <path class="lead" d="M280 186 L316 186 L334 168 L450 168"/>
+          <circle class="lead-dot" cx="280" cy="186" r="2.2"/>
+          <text x="338" y="162" class="note">built from scratch</text>
+          <text x="190" y="46" text-anchor="middle" class="cond" style="font-size:13px">SECTION A–A</text>
+          <text x="190" y="62" text-anchor="middle" class="sm">STACK, CUT THROUGH CENTRE · NTS</text>
+        </g>
+      </svg>

@@ -1,6 +1,6 @@
 # saadm.tech — Portfolio
 
-Personal portfolio built with [Astro](https://astro.build) + [Tailwind CSS v4](https://tailwindcss.com).
+Personal portfolio built with [Astro](https://astro.build), styled as an engineering drawing set ("Blueprint" direction).
 
 ## Quick start
 
@@ -16,26 +16,18 @@ npm run build    # static output in dist/
 
 | What | Where |
 |---|---|
-| Name, roles, tagline, email | `site` in `src/data/site.ts` |
-| Social links | `socials` |
-| About text, stats, photo | `about` (put photo in `public/`, e.g. `public/me.jpg`) |
-| Skills | `skills` |
-| Projects | `projects` (screenshots go in `public/projects/`) |
-| Experience / education | `experience`, `education` |
-| CV | Drop it at `public/resume.pdf` |
-| Contact form | Create a free form at formspree.io, paste the endpoint into `site.formEndpoint` |
-| Social share image | Add `public/og.png` (1200×630) |
-| Colors | `--accent` / `--accent-2` in `src/styles/global.css` |
+| Name, email, GitHub, LinkedIn, revision | `site` in `src/data/site.ts` |
+| Hero text + N1–N3 notes | `hero` |
+| About notes + spec table | `about` |
+| 4 diagrammed projects | `details` (each picks a diagram: irc / inception / cub3d / minishell) |
+| Other projects table | `parts` |
+| Education / experience | `revisions` |
+| Contact text | `contact` |
+| Diagrams (SVG) | `src/components/diagrams/` |
+| Colors / type | CSS variables at the top of `src/styles/global.css` |
+| Social share image | add `public/og.png` (1200×630) |
 
-## Features
-
-- Dark/light theme (remembers choice, follows system by default)
-- Animated hero with typing roles, gradient glow, grid background
-- Scroll reveal animations, cursor-spotlight cards (respects reduced motion)
-- Project filtering by tech tag
-- Active-section nav highlight, mobile menu
-- Copy-email button, optional AJAX contact form
-- SEO: meta + Open Graph tags, sitemap, robots.txt, custom 404
+Design mockups of the other directions (terminal, editorial, brutalist) are kept in `mockups/`.
 
 ## Deploy
 
