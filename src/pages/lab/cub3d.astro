@@ -1,0 +1,481 @@
+---
+import LabLayout from "../../layouts/LabLayout.astro";
+import maps from "../../demos/cub3d/maps.json";
+const names = Object.keys(maps);
+const first = names[0];
+---
+
+<LabLayout
+  title="cub3D"
+  sheet="L3"
+  subtitle="The team's raycaster, compiled from its C sources to WebAssembly. Same parser, same DDA, same movement constants, same doors. Pick a map, click the drawing, walk around."
+  repo="authyx/cub3d"
+  note="Real code: the bonus build's parser, raycaster, renderer, movement, mouse look, minimap and doors (plus libft and the GC allocator) are compiled unmodified to wasm32. Replaced: MiniLibX by a small C shim that renders into a pixel buffer blitted to <canvas>, libc by a bump allocator and an in-memory file, cos/sin by JS Math, and the X11 pointer by pointer lock (touch: drag). XPM textures were decoded at build time with MiniLibX's colour table; only the 15 the maps and the bonus code use are packed."
+>
+  <div class="cub">
+    <div class="cub-main">
+      <figure class="viewport">
+        <figcaption class="cap"><span class="red">Fig. 1</span> Viewport · mlx window “Cub3D” <span class="dim">1200 × 800 px</span></figcaption>
+        <div class="screen" id="screen" tabindex="0" aria-label="cub3D game view. Focus and use W A S D to move, arrow keys to turn, E for doors, Tab for the minimap, Escape to quit.">
+          <canvas id="cv" width="1200" height="800"></canvas>
+          <div class="overlay" id="overlay">
+            <svg id="plan" class="plan" aria-hidden="true"></svg>
+            <button type="button" class="start" id="start">
+              <span class="k">Click to run</span>
+              <span class="cmd" id="start-cmd">$ ./cub3D_bonus {first}</span>
+            </button>
+            <p class="ov-msg" id="ov-msg">Loading cub3d.wasm …</p>
+          </div>
+        </div>
+        <div class="touch" aria-label="Touch controls">
+          <div class="pad">
+            <span></span><button type="button" data-key="KeyW" aria-label="Forward">W</button><span></span>
+            <button type="button" data-key="KeyA" aria-label="Strafe left">A</button><button type="button" data-key="KeyS" aria-label="Back">S</button><button type="button" data-key="KeyD" aria-label="Strafe right">D</button>
+          </div>
+          <div class="pad pad-r">
+            <button type="button" data-key="ArrowLeft" aria-label="Turn left">←</button>
+            <button type="button" data-key="ArrowRight" aria-label="Turn right">→</button>
+            <button type="button" data-key="KeyE" aria-label="Open or close door">E</button>
+            <button type="button" data-key="Tab" aria-label="Toggle minimap">TAB</button>
+          </div>
+          <p class="touch-hint">Drag on the view to look around.</p>
+        </div>
+      </figure>
+
+      <aside class="panel" aria-label="Instrument panel">
+        <div class="hd"><span>Table A · Instruments</span><span id="i-state" class="st">—</span></div>
+        <dl>
+          <div><dt>Pos x, y</dt><dd id="i-pos">—</dd></div>
+          <div><dt>Cell</dt><dd id="i-cell">—</dd></div>
+          <div><dt>Angle</dt><dd id="i-ang">—</dd></div>
+          <div><dt>Dir vec</dt><dd id="i-dir">—</dd></div>
+          <div><dt>FPS</dt><dd id="i-fps">—</dd></div>
+          <div><dt>Rays / frame</dt><dd id="i-rays">—</dd></div>
+          <div><dt>Map</dt><dd id="i-map">—</dd></div>
+          <div><dt>Doors</dt><dd id="i-doors">—</dd></div>
+          <div><dt>Minimap</dt><dd id="i-tab">—</dd></div>
+          <div><dt>Tex shift</dt><dd id="i-q">—</dd></div>
+        </dl>
+        <div class="keys" aria-hidden="true">
+          <span data-k="0">W</span><span data-k="1">A</span><span data-k="2">S</span><span data-k="3">D</span><span data-k="4">←</span><span data-k="5">→</span>
+        </div>
+        <div class="legend">
+          <div class="hd"><span>Controls</span><span>key_press()</span></div>
+          <ul>
+            <li><kbd>W</kbd><kbd>S</kbd> forward / back</li>
+            <li><kbd>A</kbd><kbd>D</kbd> strafe</li>
+            <li><kbd>←</kbd><kbd>→</kbd> turn 2.5°/frame</li>
+            <li><kbd>mouse</kbd> turn (pointer lock)</li>
+            <li><kbd>E</kbd> open / close door ≤ 1.7</li>
+            <li><kbd>TAB</kbd> minimap</li>
+            <li><kbd>Q</kbd> shift wall textures</li>
+            <li><kbd>ESC</kbd> quit (exit 0)</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <div class="cub-io">
+      <section class="src">
+        <div class="cap"><span class="red">Fig. 2</span> Map source (.cub) <span class="dim">edit and run: the real parser checks it</span></div>
+        <div class="src-bar">
+          <label for="pick">Map</label>
+          <select id="pick">
+            {names.map((n) => <option value={n}>{n}</option>)}
+            <option value="">(custom)</option>
+          </select>
+          <label for="fname">argv[1]</label>
+          <input id="fname" type="text" value={first} spellcheck="false" autocomplete="off" />
+          <button type="button" id="run" class="run">Run ▸</button>
+        </div>
+        <textarea id="cub" spellcheck="false" aria-label=".cub file contents">{maps[first as keyof typeof maps]}</textarea>
+        <p class="src-help">
+          Map chars <code>0 1 N S E W D d</code> and space (<code>D</code> closed door, <code>d</code> open). Packed textures:
+          <code>assets/gray.xpm red wall wall1 wall2 wall3 ore1 ore2 ore3 ore4</code>; door and sky use <code>Demon.xpm</code> and <code>water/w0–w3.xpm</code>.
+        </p>
+      </section>
+      <section class="term">
+        <div class="cap"><span class="red">Fig. 3</span> stdout / stderr</div>
+        <pre id="out" aria-live="polite"></pre>
+      </section>
+    </div>
+  </div>
+</LabLayout>
+
+<style>
+  .cub { --scr: #0d141c; }
+  .cap {
+    font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2);
+    display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  .cap .dim { color: var(--ink-3); margin-left: auto; text-transform: none; letter-spacing: .02em; }
+  .cub-main { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 24px; align-items: start; }
+  .viewport { margin: 0; min-width: 0; }
+  .screen {
+    position: relative; border: 1.5px solid var(--line); outline: 1px solid var(--line); outline-offset: 4px;
+    background: var(--scr); aspect-ratio: 3 / 2; overflow: hidden; touch-action: none; user-select: none;
+  }
+  .screen:focus-visible { outline: 2px solid var(--red); }
+  .screen canvas { display: block; width: 100%; height: 100%; }
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid-major) 1px, transparent 1px), linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+      linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px;
+    padding: 4%;
+  }
+  .overlay[hidden] { display: none; }
+  .plan { position: absolute; inset: 6% 6% 26% 6%; width: 88%; height: 68%; }
+  .start {
+    position: relative; margin-top: auto; display: flex; flex-direction: column; gap: 4px; align-items: center;
+    font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink);
+    border: 1px solid var(--ink); padding: 10px 18px; cursor: pointer;
+  }
+  .start:hover, .start:focus-visible { background: var(--red); border-color: var(--red); }
+  .start .cmd { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--paper); opacity: .85; font-size: 11px; }
+  .start[disabled] { opacity: .5; cursor: default; }
+  .ov-msg { position: relative; font: 400 11px var(--mono); color: var(--red); text-align: center; min-height: 1.4em; max-width: 60ch; }
+
+  .panel { border: 1px solid var(--line); font: 400 12px var(--mono); background: var(--paper); }
+  .panel .hd {
+    background: var(--ink); color: var(--paper); padding: 7px 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    display: flex; justify-content: space-between; gap: 8px;
+  }
+  .panel .st { color: #9fe1a5; }
+  .panel .st.bad { color: #ff9b91; }
+  .panel dl div { display: grid; grid-template-columns: 96px 1fr; border-bottom: 1px solid rgba(28, 42, 58, .2); }
+  .panel dt { color: var(--ink-3); text-transform: uppercase; font-size: 10px; letter-spacing: .06em; padding: 7px 10px; border-right: 1px solid rgba(28, 42, 58, .2); }
+  .panel dd { padding: 6px 10px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .keys { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--line); }
+  .keys span { flex: 1; text-align: center; border: 1px solid var(--line); padding: 3px 0; color: var(--ink-3); }
+  .keys span.on { background: var(--red); border-color: var(--red); color: var(--paper); }
+  .legend ul { list-style: none; padding: 8px 10px 10px; display: grid; gap: 4px; font-size: 11px; color: var(--ink-2); }
+  kbd { font: 500 10px var(--mono); border: 1px solid var(--ink-3); padding: 0 4px; margin-right: 4px; color: var(--ink); background: var(--paper-2); }
+
+  .touch { display: none; margin-top: 14px; gap: 14px; justify-content: space-between; flex-wrap: wrap; align-items: end; }
+  .touch .pad { display: grid; grid-template-columns: repeat(3, 52px); gap: 6px; }
+  .touch .pad-r { grid-template-columns: repeat(2, 60px); }
+  .touch button {
+    height: 48px; font: 600 14px var(--mono); background: var(--paper); color: var(--ink); border: 1px solid var(--line);
+    touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  .touch button.on { background: var(--ink); color: var(--paper); }
+  .touch-hint { width: 100%; font: italic 400 11px var(--mono); color: var(--ink-3); }
+  @media (hover: none), (max-width: 700px) { .touch { display: flex; } }
+
+  .cub-io { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; margin-top: 36px; }
+  .src-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; font: 400 11px var(--mono); }
+  .src-bar label { text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+  .src-bar select, .src-bar input {
+    font: 400 12px var(--mono); color: var(--ink); background: var(--paper); border: 1px solid var(--line); padding: 5px 6px; border-radius: 0; min-width: 0;
+  }
+  .src-bar input { flex: 1 1 150px; }
+  .run {
+    font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--red); background: var(--paper);
+    border: 1px solid var(--red); padding: 6px 12px; cursor: pointer;
+  }
+  .run:hover, .run:focus-visible { background: var(--red); color: var(--paper); }
+  textarea#cub {
+    display: block; width: 100%; height: 330px; resize: vertical; font: 400 12px/1.45 var(--mono); color: var(--ink);
+    background: rgba(242, 240, 232, .85); border: 1px solid var(--line); padding: 10px 12px; white-space: pre; overflow: auto; border-radius: 0;
+  }
+  .src-help { font: 400 11px/1.6 var(--mono); color: var(--ink-3); margin-top: 8px; }
+  .src-help code { color: var(--ink-2); }
+  .term pre {
+    margin: 0; height: 388px; overflow: auto; background: var(--scr); color: #cfd8e3; font: 400 12px/1.5 var(--mono);
+    padding: 12px 14px; border: 1px solid var(--line); white-space: pre-wrap; word-break: break-word;
+  }
+  .term :global(.e) { color: #ff6b5e; }
+  .term :global(.p) { color: #8fb3d9; }
+  .term :global(.x) { color: #7f8c99; }
+
+  @media (max-width: 1000px) {
+    .cub-main { grid-template-columns: 1fr; }
+    .panel dl { display: grid; grid-template-columns: 1fr 1fr; }
+    .panel dl div:nth-child(odd) { border-right: 1px solid rgba(28, 42, 58, .2); }
+  }
+  @media (max-width: 800px) { .cub-io { grid-template-columns: 1fr; } .term pre { height: 240px; } }
+  @media (max-width: 600px) {
+    .panel dl { grid-template-columns: 1fr; }
+    .panel dl div:nth-child(odd) { border-right: 0; }
+    .plan { inset: 5% 4% 34% 4%; width: 92%; height: 61%; }
+    .start { padding: 8px 12px; }
+    .ov-msg { font-size: 10px; }
+    .cap .dim { margin-left: 0; }
+  }
+</style>
+
+<script>
+  import { spawn, loadPak, KEYSYM } from "../../demos/cub3d/runtime.js";
+  import maps from "../../demos/cub3d/maps.json";
+  import wasmUrl from "../../demos/cub3d/cub3d.wasm?url";
+  import pakUrl from "../../demos/cub3d/textures.pak?url";
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const cv = $("cv") as HTMLCanvasElement;
+  const ctx = cv.getContext("2d")!;
+  const screen = $("screen");
+  const overlay = $("overlay");
+  const startBtn = $("start") as HTMLButtonElement;
+  const ovMsg = $("ov-msg");
+  const plan = $("plan") as unknown as SVGSVGElement;
+  const out = $("out");
+  const pick = $("pick") as HTMLSelectElement;
+  const fname = $("fname") as HTMLInputElement;
+  const cub = $("cub") as HTMLTextAreaElement;
+  const I = (id: string) => $("i-" + id);
+
+  let mod: WebAssembly.Module | null = null;
+  let tex: any[] = [];
+  let proc: any = null;
+  let running = false; // ticking (after click-to-start)
+  const mouse = { x: 600, y: 400 };
+  const held = new Set<string>();
+  let blits = 0, fps = 0, lastFpsT = performance.now(), rays = 0, raysFrames = 0, raysAvg = 0;
+
+  const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
+  function print(text: string, cls = "") {
+    // the project's ft_error() writes "\033[31mError\n\033[0m": render the ANSI red
+    let html = esc(text).replace(/\x1b\[31m([\s\S]*?)\x1b\[0m/g, '<span class="e">$1</span>').replace(/\x1b\[[0-9;]*m/g, "");
+    if (cls) html = `<span class="${cls}">${html}</span>`;
+    out.insertAdjacentHTML("beforeend", html);
+    if (out.childNodes.length > 400) out.removeChild(out.firstChild!);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  // ---- the "process" ----
+  let strings: { x: number; y: number; c: number; s: string }[] = [];
+  const hooks = {
+    onWrite: (fd: number, s: string) => print(s),
+    onWindow: () => {},
+    onImage: (rgba: Uint8ClampedArray, w: number, h: number, x: number, y: number) => {
+      ctx.putImageData(new ImageData(rgba, w, h), x, y);
+      blits++;
+    },
+    onString: (x: number, y: number, c: number, s: string) => {
+      ctx.font = "600 15px 'IBM Plex Mono', monospace";
+      ctx.fillStyle = "#" + (c & 0xffffff).toString(16).padStart(6, "0");
+      ctx.fillText(s, x, y);
+    },
+  };
+
+  async function launch() {
+    if (!mod) return;
+    stop();
+    const name = fname.value;
+    print(`$ ./cub3D_bonus ${name}\n`, "p");
+    mouse.x = 600; mouse.y = 400;
+    proc = await spawn(mod, tex, name, cub.value, hooks, mouse);
+    ($("start-cmd")).textContent = `$ ./cub3D_bonus ${name}`;
+    if (proc.state === "running") {
+      drawPlan();
+      showOverlay("", true);
+    } else {
+      finished();
+    }
+    updatePanel();
+  }
+
+  function finished() {
+    running = false;
+    if (document.pointerLockElement) document.exitPointerLock();
+    const msg = proc.state === "crashed"
+      ? `wasm trap: ${proc.error} (the native build would have crashed here)`
+      : `process exited with status ${proc.code}`;
+    print(`[${msg}]\n`, "x");
+    drawPlan();
+    showOverlay(proc.state === "exited" && proc.code === 0 ? "ESC: close_window() → exit(0). Click to run again." : msg + ". See Fig. 3, edit the map, run again.", true);
+  }
+
+  function showOverlay(msg: string, canStart: boolean) {
+    overlay.hidden = false;
+    ovMsg.textContent = msg;
+    startBtn.disabled = !canStart;
+  }
+
+  function stop() {
+    releaseAll();
+    running = false;
+  }
+
+  function begin() {
+    if (!proc || proc.state !== "running") { launch().then(() => proc?.state === "running" && begin()); return; }
+    overlay.hidden = true;
+    running = true;
+    screen.focus({ preventScroll: true });
+    if (matchMedia("(hover: hover) and (pointer: fine)").matches && screen.requestPointerLock) {
+      try { const r: any = screen.requestPointerLock(); r?.catch?.(() => {}); } catch {}
+    }
+  }
+
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!running || !proc) return;
+    const before = blits;
+    proc.tick();
+    if (blits !== before) {
+      rays += proc.exports.probe_take_rays();
+      raysFrames++;
+    }
+    if (proc.state !== "running") { finished(); updatePanel(); return; }
+    const now = performance.now();
+    if (now - lastFpsT >= 500) {
+      fps = (blits * 1000) / (now - lastFpsT);
+      raysAvg = raysFrames ? rays / raysFrames : 0;
+      blits = 0; rays = 0; raysFrames = 0; lastFpsT = now;
+      updatePanel();
+    }
+  }
+
+  // ---- instrument panel ----
+  function updatePanel() {
+    const st = I("state");
+    if (!proc) { st.textContent = "—"; return; }
+    st.textContent = proc.state === "running" ? (running ? "running" : "ready") : proc.state === "exited" ? `exit ${proc.code}` : "crashed";
+    st.classList.toggle("bad", proc.state !== "running");
+    const e = proc.exports;
+    const x = e.probe_f64(0), y = e.probe_f64(1), a = e.probe_f64(2);
+    const w = e.probe_i32(2), h = e.probe_i32(3);
+    if (!w) {
+      for (const k of ["pos", "cell", "ang", "dir", "map", "doors", "tab", "q"]) I(k).textContent = "—";
+    } else {
+      I("pos").textContent = `${x.toFixed(3)}, ${y.toFixed(3)}`;
+      I("cell").textContent = `[${Math.floor(y)}][${Math.floor(x)}] '${proc.row(Math.floor(y))[Math.floor(x)] ?? "?"}'`;
+      I("ang").textContent = `${a.toFixed(3)} rad · ${((a * 180) / 3.14).toFixed(1)}°`;
+      I("dir").textContent = `${Math.cos(a).toFixed(3)}, ${Math.sin(a).toFixed(3)}`;
+      I("map").textContent = `${w} × ${h} cells`;
+      let open = 0, closed = 0;
+      for (let r = 0; r < h; r++) for (const c of proc.row(r)) { if (c === "D") closed++; else if (c === "d") open++; }
+      I("doors").textContent = open + closed ? `${closed} closed · ${open} open` : "none";
+      I("tab").textContent = e.probe_i32(0) ? "on (TAB)" : "off (TAB)";
+      I("q").textContent = e.probe_i32(1) ? "on (Q)" : "off (Q)";
+    }
+    I("fps").textContent = running ? `${fps.toFixed(0)} (cap ≈ 68)` : "—";
+    I("rays").textContent = running ? `${Math.round(raysAvg)} DDA` : "—";
+    const bits = w ? e.probe_i32(4) : 0;
+    document.querySelectorAll<HTMLElement>(".keys span").forEach((s) => s.classList.toggle("on", !!(bits & (1 << +s.dataset.k!))));
+  }
+  setInterval(() => running && updatePanel(), 150);
+
+  // ---- the drawing on the start overlay: the parsed grid, as a plan ----
+  function drawPlan() {
+    const ns = "http://www.w3.org/2000/svg";
+    plan.innerHTML = "";
+    if (!proc) return;
+    const e = proc.exports;
+    const w = e.probe_i32(2), h = e.probe_i32(3);
+    if (!w || !h) return;
+    plan.setAttribute("viewBox", `-2 -2 ${w + 4} ${h + 4.5}`);
+    plan.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    let d = "", doors = "";
+    for (let r = 0; r < h; r++) {
+      const row = proc.row(r);
+      for (let c = 0; c < w; c++) {
+        const ch = row[c];
+        if (ch === "1") d += `M${c} ${r}h1v1h-1z`;
+        else if (ch === "D" || ch === "d") doors += `<rect x="${c + 0.15}" y="${r + 0.15}" width=".7" height=".7" fill="${ch === "D" ? "var(--red)" : "none"}" stroke="var(--red)" stroke-width=".08"/>`;
+      }
+    }
+    const px = e.probe_f64(0), py = e.probe_f64(1), a = e.probe_f64(2);
+    const fov = (75 * 3.14) / 180, L = 3;
+    const cone = `M${px} ${py}L${px + Math.cos(a - fov / 2) * L} ${py + Math.sin(a - fov / 2) * L}L${px + Math.cos(a + fov / 2) * L} ${py + Math.sin(a + fov / 2) * L}z`;
+    const sw = Math.max(0.04, w / 600);
+    plan.innerHTML = `
+      <defs><pattern id="hatch" width=".5" height=".5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2=".5" stroke="var(--ink)" stroke-width=".06"/></pattern></defs>
+      <path d="${d}" fill="url(#hatch)" stroke="var(--ink)" stroke-width="${sw}"/>
+      ${doors}
+      <path d="${cone}" fill="rgba(194,54,43,.12)" stroke="var(--red)" stroke-width="${sw}" stroke-dasharray=".2 .15"/>
+      <circle cx="${px}" cy="${py}" r=".28" fill="var(--red)"/>
+      <g stroke="var(--ink-2)" stroke-width="${sw}" fill="none"><path d="M0 ${h + 1}H${w}M0 ${h + 0.6}v.8M${w} ${h + 0.6}v.8"/></g>
+      <text x="${w / 2}" y="${h + 2.2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="${Math.min(0.9, Math.max(0.6, w / 40))}" fill="var(--ink-2)">${w} × ${h} CELLS · PLAN</text>`;
+  }
+
+  // ---- input ----
+  function key(code: string, down: boolean) {
+    if (!proc || !running) return;
+    const sym = (KEYSYM as any)[code];
+    if (sym === undefined) return;
+    if (down) held.add(code); else held.delete(code);
+    proc.key(down, sym);
+    if (proc.state !== "running") finished();
+    updatePanel();
+  }
+  function releaseAll() {
+    if (proc && proc.state === "running") for (const c of held) proc.key(false, (KEYSYM as any)[c]);
+    held.clear();
+    document.querySelectorAll(".touch button.on").forEach((b) => b.classList.remove("on"));
+  }
+  screen.addEventListener("keydown", (ev) => {
+    if (!running) return;
+    if (!(ev.code in KEYSYM)) return;
+    ev.preventDefault();
+    if (ev.repeat) return; // the hook expects one press per key down
+    key(ev.code, true);
+  });
+  screen.addEventListener("keyup", (ev) => {
+    if (!running || !(ev.code in KEYSYM)) return;
+    ev.preventDefault();
+    key(ev.code, false);
+  });
+  screen.addEventListener("blur", releaseAll);
+  screen.addEventListener("click", () => {
+    if (running && !document.pointerLockElement && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      try { const r: any = screen.requestPointerLock(); r?.catch?.(() => {}); } catch {}
+    }
+  });
+  document.addEventListener("mousemove", (ev) => {
+    if (running && document.pointerLockElement === screen) mouse.x += ev.movementX;
+  });
+  // touch: drag on the view moves the virtual X pointer handle_mouse() reads
+  let dragId: number | null = null, dragX = 0;
+  screen.addEventListener("pointerdown", (ev) => {
+    if (!running || ev.pointerType === "mouse") return;
+    dragId = ev.pointerId; dragX = ev.clientX;
+  });
+  screen.addEventListener("pointermove", (ev) => {
+    if (ev.pointerId !== dragId) return;
+    mouse.x += (ev.clientX - dragX) * 2; dragX = ev.clientX;
+  });
+  const endDrag = (ev: PointerEvent) => { if (ev.pointerId === dragId) dragId = null; };
+  screen.addEventListener("pointerup", endDrag);
+  screen.addEventListener("pointercancel", endDrag);
+
+  document.querySelectorAll<HTMLButtonElement>(".touch button").forEach((b) => {
+    const code = b.dataset.key!;
+    const down = (ev: Event) => { ev.preventDefault(); if (!running) begin(); b.classList.add("on"); key(code, true); };
+    const up = (ev: Event) => { ev.preventDefault(); if (!b.classList.contains("on")) return; b.classList.remove("on"); key(code, false); };
+    b.addEventListener("pointerdown", down);
+    b.addEventListener("pointerup", up);
+    b.addEventListener("pointerleave", up);
+    b.addEventListener("pointercancel", up);
+    b.addEventListener("contextmenu", (ev) => ev.preventDefault());
+  });
+
+  startBtn.addEventListener("click", (ev) => { ev.stopPropagation(); begin(); });
+  $("run").addEventListener("click", () => launch());
+  pick.addEventListener("change", () => {
+    if (!pick.value) return;
+    cub.value = (maps as Record<string, string>)[pick.value];
+    fname.value = pick.value;
+    launch();
+  });
+  cub.addEventListener("input", () => { pick.value = ""; });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
+
+  // ---- boot ----
+  (async () => {
+    try {
+      startBtn.disabled = true;
+      const [wb, pb] = await Promise.all([fetch(wasmUrl).then((r) => r.arrayBuffer()), fetch(pakUrl).then((r) => r.arrayBuffer())]);
+      mod = await WebAssembly.compile(wb);
+      tex = await loadPak(pb);
+      print(`cub3d.wasm ${(wb.byteLength / 1024).toFixed(0)} KB · ${tex.length} textures decoded\n`, "x");
+      requestAnimationFrame(frame);
+      await launch();
+    } catch (err) {
+      showOverlay("Could not load the wasm build: " + err, false);
+    }
+  })();
+</script>
