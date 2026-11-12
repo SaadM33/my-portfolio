@@ -319,7 +319,7 @@ class IrssiPane extends Pane {
         const segs: Seg[] = [[ "[Users " + c + "] ", "inf"]];
         for (const n of T.split(" ").filter(Boolean)) {
           map.set(n.replace(/^@/, ""), n.startsWith("@"));
-          segs.push(["[", "dim"], [n, n.startsWith("@") ? "me" : "nk"], ["] ", "dim"]);
+          segs.push([n, n.startsWith("@") ? "me" : "nk"], [" "]);
         }
         this.line([ts, [c, "tg"], ...segs]);
         return;

@@ -24,6 +24,7 @@ const first = names[0];
               <span class="k">Click to run</span>
               <span class="cmd" id="start-cmd">$ ./cub3D_bonus {first}</span>
             </button>
+            <p class="ov-dim" id="ov-dim"></p>
             <p class="ov-msg" id="ov-msg">Loading cub3d.wasm …</p>
           </div>
         </div>
@@ -127,7 +128,7 @@ const first = names[0];
     padding: 4%;
   }
   .overlay[hidden] { display: none; }
-  .plan { position: absolute; inset: 6% 6% 26% 6%; width: 88%; height: 68%; }
+  .plan { position: absolute; inset: 5% 5% 30% 5%; width: 90%; height: 65%; }
   .start {
     position: relative; margin-top: auto; display: flex; flex-direction: column; gap: 4px; align-items: center;
     font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--paper); background: var(--ink);
@@ -136,6 +137,7 @@ const first = names[0];
   .start:hover, .start:focus-visible { background: var(--red); border-color: var(--red); }
   .start .cmd { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--paper); opacity: .85; font-size: 11px; }
   .start[disabled] { opacity: .5; cursor: default; }
+  .ov-dim { position: relative; font: 500 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
   .ov-msg { position: relative; font: 400 11px var(--mono); color: var(--red); text-align: center; min-height: 1.4em; max-width: 60ch; }
 
   .panel { border: 1px solid var(--line); font: 400 12px var(--mono); background: var(--paper); }
@@ -200,9 +202,9 @@ const first = names[0];
   @media (max-width: 600px) {
     .panel dl { grid-template-columns: 1fr; }
     .panel dl div:nth-child(odd) { border-right: 0; }
-    .plan { inset: 5% 4% 34% 4%; width: 92%; height: 61%; }
+    .plan { inset: 4% 3% 36% 3%; width: 94%; height: 60%; }
     .start { padding: 8px 12px; }
-    .ov-msg { font-size: 10px; }
+  .ov-msg { font-size: 10px; }
     .cap .dim { margin-left: 0; }
   }
 </style>
@@ -298,6 +300,7 @@ const first = names[0];
   function stop() {
     releaseAll();
     running = false;
+    if (document.pointerLockElement) document.exitPointerLock();
   }
 
   function begin() {
@@ -367,7 +370,7 @@ const first = names[0];
     const e = proc.exports;
     const w = e.probe_i32(2), h = e.probe_i32(3);
     if (!w || !h) return;
-    plan.setAttribute("viewBox", `-2 -2 ${w + 4} ${h + 4.5}`);
+    plan.setAttribute("viewBox", `-1 -1 ${w + 2} ${h + 2}`);
     plan.setAttribute("preserveAspectRatio", "xMidYMid meet");
     let d = "", doors = "";
     for (let r = 0; r < h; r++) {
@@ -388,8 +391,8 @@ const first = names[0];
       ${doors}
       <path d="${cone}" fill="rgba(194,54,43,.12)" stroke="var(--red)" stroke-width="${sw}" stroke-dasharray=".2 .15"/>
       <circle cx="${px}" cy="${py}" r=".28" fill="var(--red)"/>
-      <g stroke="var(--ink-2)" stroke-width="${sw}" fill="none"><path d="M0 ${h + 1}H${w}M0 ${h + 0.6}v.8M${w} ${h + 0.6}v.8"/></g>
-      <text x="${w / 2}" y="${h + 2.2}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="${Math.min(0.9, Math.max(0.6, w / 40))}" fill="var(--ink-2)">${w} × ${h} CELLS · PLAN</text>`;
+      `;
+    $("ov-dim").textContent = `${w} × ${h} cells · plan view`;
   }
 
   // ---- input ----
@@ -424,6 +427,11 @@ const first = names[0];
     if (running && !document.pointerLockElement && matchMedia("(hover: hover) and (pointer: fine)").matches) {
       try { const r: any = screen.requestPointerLock(); r?.catch?.(() => {}); } catch {}
     }
+  });
+  // Browsers swallow the first Esc to release the pointer lock, so treat the
+  // release itself as the Esc press the project's key_press() quits on.
+  document.addEventListener("pointerlockchange", () => {
+    if (!document.pointerLockElement && running) key("Escape", true);
   });
   document.addEventListener("mousemove", (ev) => {
     if (running && document.pointerLockElement === screen) mouse.x += ev.movementX;
