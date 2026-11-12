@@ -1,0 +1,54 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+import Icon from "./Icon.astro";
+import { about, site } from "../data/site";
+const initials = site.name
+  .split(" ")
+  .map((w) => w[0])
+  .join("")
+  .slice(0, 2);
+---
+
+<section id="about" class="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+  <SectionHeading index="01" title="About me" />
+  <div class="grid gap-12 md:grid-cols-[1.4fr_1fr] md:items-start">
+    <div class="reveal space-y-5 text-lg leading-relaxed text-muted">
+      {about.paragraphs.map((p) => <p>{p}</p>)}
+      {
+        site.location && (
+          <p class="flex items-center gap-2 pt-2 font-mono text-sm">
+            <Icon name="pin" class="size-4 text-accent" /> {site.location}
+          </p>
+        )
+      }
+    </div>
+
+    <div class="reveal">
+      <div class="card overflow-hidden p-2">
+        <div
+          class="relative aspect-square overflow-hidden rounded-xl bg-gradient-to-br from-accent/25 via-elevated to-accent-2/25"
+        >
+          {
+            about.photo ? (
+              <img src={about.photo} alt={site.name} class="size-full object-cover" loading="lazy" />
+            ) : (
+              <div class="grid size-full place-items-center font-mono text-7xl font-semibold text-gradient">
+                {initials}
+              </div>
+            )
+          }
+        </div>
+      </div>
+      <div class="mt-4 grid grid-cols-3 gap-3">
+        {
+          about.stats.map((s) => (
+            <div class="card p-4 text-center">
+              <div class="text-2xl font-semibold tracking-tight">{s.value}</div>
+              <div class="mt-1 text-xs text-muted">{s.label}</div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
