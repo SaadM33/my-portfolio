@@ -1,0 +1,112 @@
+---
+import SectionHeading from "./SectionHeading.astro";
+import Icon from "./Icon.astro";
+import { site, socials } from "../data/site";
+const field =
+  "w-full rounded-xl border border-border bg-elevated px-4 py-3 text-sm outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20";
+---
+
+<section id="contact" class="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+  <SectionHeading index="05" title="Let's build something" />
+  <div class:list={["grid gap-10", site.formEndpoint && "lg:grid-cols-2"]}>
+    <div class="reveal">
+      <p class="max-w-md text-lg leading-relaxed text-muted">
+        Have a project, an opportunity, or just want to say hi? My inbox is always open. I'll get back to you as
+        soon as I can.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          href={`mailto:${site.email}`}
+          class="inline-flex items-center gap-2 rounded-full bg-fg px-6 py-3 text-sm font-medium text-bg transition hover:opacity-90"
+        >
+          <Icon name="mail" class="size-4" />
+          {site.email}
+        </a>
+        <button
+          id="copy-email"
+          data-email={site.email}
+          aria-label="Copy email address"
+          class="grid size-11 place-items-center rounded-full border border-border text-muted transition hover:text-fg"
+        >
+          <Icon name="copy" class="size-4" />
+        </button>
+      </div>
+      <div class="mt-8 flex gap-2">
+        {
+          socials.map((s) => (
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener"
+              class="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted transition hover:text-fg"
+            >
+              <Icon name={s.icon} class="size-4" /> {s.label}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    {
+      site.formEndpoint && (
+        <form id="contact-form" action={site.formEndpoint} method="POST" class="card reveal space-y-4 p-6">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block">
+              <span class="mb-1.5 block text-sm">Name</span>
+              <input name="name" required class={field} placeholder="Jane Doe" />
+            </label>
+            <label class="block">
+              <span class="mb-1.5 block text-sm">Email</span>
+              <input name="email" type="email" required class={field} placeholder="jane@company.com" />
+            </label>
+          </div>
+          <label class="block">
+            <span class="mb-1.5 block text-sm">Message</span>
+            <textarea name="message" rows="5" required class={field} placeholder="Tell me about your project..." />
+          </label>
+          <button
+            type="submit"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-accent to-accent-2 px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          >
+            <Icon name="send" class="size-4" /> <span>Send message</span>
+          </button>
+          <p id="form-status" class="text-center text-sm text-muted" aria-live="polite" />
+        </form>
+      )
+    }
+  </div>
+</section>
+
+<script>
+  const copy = document.getElementById("copy-email") as HTMLButtonElement | null;
+  copy?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(copy.dataset.email!);
+      copy.classList.add("text-emerald-500");
+      setTimeout(() => copy.classList.remove("text-emerald-500"), 1500);
+    } catch {}
+  });
+
+  const form = document.getElementById("contact-form") as HTMLFormElement | null;
+  const status = document.getElementById("form-status");
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector("button")!;
+    btn.disabled = true;
+    status!.textContent = "Sending…";
+    try {
+      const res = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) throw new Error();
+      form.reset();
+      status!.textContent = "Thanks! I'll be in touch soon. ✨";
+    } catch {
+      status!.textContent = "Something went wrong. Please email me directly.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
