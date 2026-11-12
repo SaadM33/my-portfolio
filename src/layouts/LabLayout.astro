@@ -1,0 +1,49 @@
+---
+/**
+ * Shared shell for runnable project demos (/lab/*).
+ * Usage:
+ *   <LabLayout title="cub3D" sheet="L1" subtitle="..." repo="authyx/cub3d" note="Browser port of ...">
+ *     ...demo markup...
+ *   </LabLayout>
+ */
+import Layout from "./Layout.astro";
+import { site } from "../data/site";
+
+interface Props {
+  title: string;
+  sheet: string; // e.g. "L1"
+  subtitle: string;
+  repo?: string;
+  note?: string; // honesty note: what's real vs simulated
+}
+const { title, sheet, subtitle, repo, note } = Astro.props;
+---
+
+<Layout title={`${title} — run it · ${site.fullName}`} description={subtitle}>
+  <div class="frame">
+    <header class="strip">
+      <div class="id"><b>{site.drawingNo}</b><span class="hide-s">· lab sheet {sheet}</span></div>
+      <nav aria-label="Lab">
+        <a href="/#details"><span>←</span>Back to details</a>
+      </nav>
+      <div class="stamp">Rev {site.rev}</div>
+    </header>
+    <main id="main">
+      <section class="sheet">
+        <div class="lab-head">
+          <div>
+            <div class="dwg-label"><span class="red">Lab sheet {sheet}</span>Runnable detail</div>
+            <h1>{title}</h1>
+            <p>{subtitle}</p>
+            {note && <p class="lab-note">{note}</p>}
+          </div>
+          <div class="lab-meta">
+            {repo && <div>Source<br /><a href={`https://github.com/${repo}`}>{repo} ↗</a></div>}
+          </div>
+        </div>
+        <slot />
+      </section>
+    </main>
+  </div>
+  <footer class="foot"><span>Do not scale drawing. If in doubt, ask.</span><a href="/" style="text-decoration:none">← {site.drawingNo}</a></footer>
+</Layout>

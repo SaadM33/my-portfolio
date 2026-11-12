@@ -314,3 +314,14 @@ td.qty{color:var(--ink-3)}
 .skip:focus{top:12px}
 :focus-visible{outline:2px solid var(--red);outline-offset:2px}
 
+
+/* ---------- lab (runnable demos) ---------- */
+.lab-head{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;margin-bottom:28px}
+.lab-head h1{font:700 clamp(40px,6vw,72px)/.9 var(--cond);text-transform:uppercase;letter-spacing:-.01em}
+.lab-head p{font-size:18px;color:var(--ink-2);max-width:60ch;margin-top:14px}
+.lab-meta{font:400 11px/1.7 var(--mono);color:var(--ink-3);text-align:right;text-transform:uppercase;letter-spacing:.06em}
+.lab-meta a{color:var(--ink);text-decoration:none}.lab-meta a:hover{color:var(--red)}
+.lab-note{font:italic 400 12px/1.6 var(--mono);color:var(--red);margin-top:18px}
+.run-btn{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border:1px solid var(--red);color:var(--red);padding:3px 8px;margin-right:auto;margin-left:12px}
+.run-btn:hover{background:var(--red);color:var(--paper)}
+@media (max-width:900px){.lab-head{grid-template-columns:1fr}.lab-meta{text-align:left}}
