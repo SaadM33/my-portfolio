@@ -12,10 +12,11 @@ export const site = {
   url: "https://saadm.tech",
   drawingNo: "SM-2026-001",
   rev: "2026.11", // bump when you update the site
-  email: "smaaqili@gmail.com", // TODO: switch to hello@saadm.tech once the domain + mailbox exist
+  // Never written into the HTML: assembled by JS on the page so scrapers don't harvest it.
+  email: "smaaqili@gmail.com", // TODO: switch to hello@saadm.tech once the domain + forwarding exist
   github: "SaadM33",
   linkedin: "linkedin.com/in/saad-el-maaqili",
-  cv: "", // TODO: e.g. "/cv.pdf" — drop the PDF in public/ (consider removing the phone number first)
+  cv: "/cv.pdf", // public/cv.pdf — phone number removed
   location: "Rabat, Morocco",
   timezone: "UTC+1",
   description:

@@ -10,11 +10,12 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const lede = esc(hero.lede).replace(/\*(.+?)\*/g, "<em>$1</em>");
 const year = new Date().getFullYear();
 
+const [mu, md] = site.email.split("@");
+const enc = (x: string) => Buffer.from([...x].reverse().join("")).toString("base64");
 const links = [
-  { k: "Email", v: site.email, href: `mailto:${site.email}`, arrow: "→" },
   { k: "GitHub", v: `github.com/${site.github}`, href: gh(site.github), arrow: "↗" },
   ...(site.linkedin ? [{ k: "LinkedIn", v: site.linkedin, href: `https://${site.linkedin}`, arrow: "↗" }] : []),
-  ...(site.cv ? [{ k: "CV", v: "Download PDF", href: site.cv, arrow: "↓" }] : []),
+  ...(site.cv ? [{ k: "CV", v: "Download PDF", href: site.cv, arrow: "↓", download: true }] : []),
 ];
 ---
 
@@ -161,7 +162,8 @@ const links = [
             <p>{contact.text}</p>
           </div>
           <div class="links">
-            {links.map((l) => <a href={l.href}><small>{l.k}</small><span>{l.v}</span><span aria-hidden="true">{l.arrow}</span></a>)}
+            <a href="#contact" class="js-mail" data-u={enc(mu)} data-d={enc(md)}><small>Email</small><span>click to reveal</span><span aria-hidden="true">→</span></a>
+            {links.map((l) => <a href={l.href} download={l.download ? "Saad-El-Maaqili-CV.pdf" : undefined}><small>{l.k}</small><span>{l.v}</span><span aria-hidden="true">{l.arrow}</span></a>)}
           </div>
         </div>
         <div class="endblock">
@@ -177,3 +179,13 @@ const links = [
 
   <footer class="foot"><span>Do not scale drawing. If in doubt, ask.</span><span>© {year} {site.initials} · drawn by hand in HTML</span></footer>
 </Layout>
+
+<script>
+  // Build the address only in the browser, so it never sits in the HTML for scrapers.
+  const dec = (b: string) => [...atob(b)].reverse().join("");
+  document.querySelectorAll<HTMLAnchorElement>(".js-mail").forEach((a) => {
+    const addr = dec(a.dataset.u!) + "@" + dec(a.dataset.d!);
+    a.href = "mailto:" + addr;
+    a.querySelector("span")!.textContent = addr;
+  });
+</script>
