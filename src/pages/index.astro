@@ -15,7 +15,8 @@ const enc = (x: string) => Buffer.from([...x].reverse().join("")).toString("base
 const links = [
   { k: "GitHub", v: `github.com/${site.github}`, href: gh(site.github), arrow: "↗" },
   ...(site.linkedin ? [{ k: "LinkedIn", v: site.linkedin, href: `https://${site.linkedin}`, arrow: "↗" }] : []),
-  ...(site.cv ? [{ k: "CV", v: "Download PDF", href: site.cv, arrow: "↓", download: true }] : []),
+  ...(site.cv ? [{ k: "CV · EN", v: "Download PDF", href: site.cv, arrow: "↓", download: "Saad-El-Maaqili-CV-EN.pdf" }] : []),
+  ...(site.cvFr ? [{ k: "CV · FR", v: "Télécharger le PDF", href: site.cvFr, arrow: "↓", download: "Saad-El-Maaqili-CV-FR.pdf" }] : []),
 ];
 ---
 
@@ -163,7 +164,7 @@ const links = [
           </div>
           <div class="links">
             <a href="#contact" class="js-mail" data-u={enc(mu)} data-d={enc(md)}><small>Email</small><span>click to reveal</span><span aria-hidden="true">→</span></a>
-            {links.map((l) => <a href={l.href} download={l.download ? "Saad-El-Maaqili-CV.pdf" : undefined}><small>{l.k}</small><span>{l.v}</span><span aria-hidden="true">{l.arrow}</span></a>)}
+            {links.map((l) => <a href={l.href} download={l.download}><small>{l.k}</small><span>{l.v}</span><span aria-hidden="true">{l.arrow}</span></a>)}
           </div>
         </div>
         <div class="endblock">
