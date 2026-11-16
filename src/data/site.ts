@@ -16,7 +16,8 @@ export const site = {
   email: "smaaqili@gmail.com", // TODO: switch to hello@saadm.tech once the domain + forwarding exist
   github: "SaadM33",
   linkedin: "linkedin.com/in/saad-el-maaqili",
-  cv: "/cv.pdf", // public/cv.pdf
+  cv: "/cv.pdf", // public/cv.pdf (English)
+  cvFr: "/cv-fr.pdf", // public/cv-fr.pdf (French)
   location: "Rabat, Morocco",
   timezone: "UTC+1",
   description:
